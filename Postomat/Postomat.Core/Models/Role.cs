@@ -3,8 +3,8 @@
 public class Role
 {
     public const int MaxRoleNameLength = 128;
-    public const int MinAccessLvl = 0;
-    public const int MaxAccessLvl = 999;
+    public const int MinAccessLvl = (int)AccessLvlEnumerator.SuperUser;
+    public const int MaxAccessLvl = (int)AccessLvlEnumerator.FiredEmployee;
 
     private Role(Guid id, string roleName, int accessLvl)
     {
