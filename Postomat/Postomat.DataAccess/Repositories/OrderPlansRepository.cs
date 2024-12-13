@@ -8,21 +8,35 @@ namespace Postomat.DataAccess.Repositories;
 public class OrderPlansRepository : IOrderPlansRepository
 {
     private readonly PostomatDbContext _context;
-    private readonly IOrdersRepository _ordersRepository;
     private readonly IPostomatsRepository _postomatsRepository;
     private readonly IUsersRepository _usersRepository;
 
-    public OrderPlansRepository(PostomatDbContext context, IOrdersRepository ordersRepository, 
-        IPostomatsRepository postomatsRepository, IUsersRepository usersRepository)
+    public OrderPlansRepository(PostomatDbContext context, IPostomatsRepository postomatsRepository, 
+        IUsersRepository usersRepository)
     {
         _context = context;
-        _ordersRepository = ordersRepository;
         _postomatsRepository = postomatsRepository;
         _usersRepository = usersRepository;
     }
 
     public async Task<Guid> CreateOrderPlan(OrderPlan orderPlan)
     {
+        if (orderPlan.Status != "Создан")
+            throw new Exception("You can only create order plans with the status \"Создан\"");
+        
+        if (orderPlan.StoreUntilDate is not null)
+            throw new Exception("The order should not be delivered initially, change the storage time to");
+        
+        /* TODO */
+        
+        // Существование заказа
+        
+        // Существование постамата
+        
+        // Существование пользователя
+        
+        // Проверка на отсутствие других пользователей
+        
         var orderPlanEntity = new Database.Entities.OrderPlan
         {
             Id = orderPlan.Id,
@@ -40,12 +54,6 @@ public class OrderPlansRepository : IOrderPlansRepository
         await _context.OrderPlans.AddAsync(orderPlanEntity);
         await _context.SaveChangesAsync();
 
-        var addedCells = new List<Guid>();
-        foreach (var cell in orderPlan.Cells)
-        {
-            addedCells.Add(await _cellsRepository.CreateCell(cell));
-        }
-
         return orderPlanEntity.Id;
     }
 
@@ -54,11 +62,34 @@ public class OrderPlansRepository : IOrderPlansRepository
         var orderPlanEntities = await _context.OrderPlans
             .AsNoTracking()
             .ToListAsync();
+        
+        var orders = await _context.Orders.ToListAsync();
+        
+        List<Core.Models.Postomat> postomats;
+        try
+        {
+            postomats = await _postomatsRepository.GetAllPostomats();
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"An error occurred when getting the order plans {e.Message}");
+        }
+        
+        List<User> users;
+        try
+        {
+            users = await _usersRepository.GetAllUsers();
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"An error occurred when getting the order plans {e.Message}");
+        }
 
         var orderPlans = new List<OrderPlan>();
         foreach (var orderPlanEntity in orderPlanEntities)
         {
-            var cells = (await _cellsRepository.GetAllCells())
+            /* TODO */
+            /*var cells = (await _cellsRepository.GetAllCells())
                 .Where(c => c.OrderPlanId == orderPlanEntity.Id)
                 .ToList();
 
@@ -68,12 +99,13 @@ public class OrderPlansRepository : IOrderPlansRepository
                     orderPlanEntity.Name,
                     orderPlanEntity.Address,
                     cells)
-                .OrderPlan);
+                .OrderPlan);*/
         }
 
         return orderPlans;
     }
 
+    /* TODO */
     public async Task<Guid> UpdateOrderPlan(Guid orderPlanId, OrderPlan newOrderPlan)
     {
         var oldOrderPlan = (await GetAllOrderPlans())
@@ -101,6 +133,7 @@ public class OrderPlansRepository : IOrderPlansRepository
         return orderPlanId;
     }
 
+    /* TODO */
     public async Task<Guid> DeleteOrderPlan(Guid orderPlanId)
     {
         var numUpdated = await _context.OrderPlans

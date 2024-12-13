@@ -8,17 +8,10 @@ namespace Postomat.DataAccess.Repositories;
 public class OrdersRepository : IOrdersRepository
 {
     private readonly PostomatDbContext _context;
-    private readonly ICellsRepository _cellsRepository;
-    private readonly IOrderPlansRepository _orderPlansRepository;
 
-    public OrdersRepository(
-        PostomatDbContext context,
-        ICellsRepository cellsRepository,
-        IOrderPlansRepository orderPlansRepository)
+    public OrdersRepository(PostomatDbContext context)
     {
         _context = context;
-        _cellsRepository = cellsRepository;
-        _orderPlansRepository = orderPlansRepository;
     }
 
     public async Task<Guid> CreateOrder(Order order)
@@ -61,8 +54,7 @@ public class OrdersRepository : IOrdersRepository
         if (oldOrder is null)
             throw new Exception($"Unknown order id: \"{orderId}\"");
 
-        var cellWithOrder = (await _cellsRepository.GetAllCells())
-            .FirstOrDefault(cell => cell.Order?.Id == orderId);
+        var cellWithOrder = await _context.Cells.FirstOrDefaultAsync(c => c.OrderId == oldOrder.Id);
         if (cellWithOrder is not null && newOrder.OrderSize > cellWithOrder.CellSize)
             throw new Exception($"It is impossible to change the order size for order \"{orderId}\", " +
                                 $"due to the discrepancy between the new size and the size of the " +
@@ -79,15 +71,15 @@ public class OrdersRepository : IOrdersRepository
 
     public async Task<Guid> DeleteOrder(Guid orderId)
     {
-        var cellWithOrder = (await _cellsRepository.GetAllCells())
-            .FirstOrDefault(cell => cell.Order?.Id == orderId);
+        var cellWithOrder = await _context.Cells
+            .FirstOrDefaultAsync(c => c.OrderId == orderId);
         if (cellWithOrder is not null)
             throw new Exception($"Deleting an order \"{orderId}\" is destructive, " +
                                 $"it is contained in a cell \"{cellWithOrder.Id}\" " +
                                 $"at the postomat \"{cellWithOrder.PostomatId}\"");
 
-        var orderPlanWithOrder = (await _orderPlansRepository.GetAllOrderPlans())
-            .FirstOrDefault(orderPlan => orderPlan.Order.Id == orderId);
+        var orderPlanWithOrder = await _context.OrderPlans
+            .FirstOrDefaultAsync(op => op.Order.Id == orderId);
         if (orderPlanWithOrder is not null)
             throw new Exception($"Deleting an order \"{orderId}\" is destructive, " +
                                 $"it is contained in an order plan \"{orderPlanWithOrder.Id}\"");

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Extensions;
 using Postomat.Core.Abstractions;
 using Postomat.Core.Models;
 using Postomat.DataAccess.Database.Context;
@@ -9,12 +8,10 @@ namespace Postomat.DataAccess.Repositories;
 public class RolesRepository : IRolesRepository
 {
     private readonly PostomatDbContext _context;
-    private readonly IUsersRepository _usersRepository;
 
-    public RolesRepository(PostomatDbContext context, IUsersRepository usersRepository)
+    public RolesRepository(PostomatDbContext context)
     {
         _context = context;
-        _usersRepository = usersRepository;
     }
 
     public async Task<Guid> CreateRole(Role role)
@@ -60,14 +57,16 @@ public class RolesRepository : IRolesRepository
 
     public async Task<Guid> UpdateRole(Guid roleId, Role newRole)
     {
-        var oldRole = (await GetAllRoles())
+        var allRoles = await GetAllRoles();
+
+        var oldRole = allRoles
             .FirstOrDefault(r => r.Id == roleId);
         if (oldRole is null)
             throw new Exception($"Unknown role id: \"{roleId}\"");
 
         if (newRole.AccessLvl == (int)AccessLvlEnumerator.SuperUser)
         {
-            var superUserRole = (await GetAllRoles())
+            var superUserRole = allRoles
                 .FirstOrDefault(r => r.AccessLvl == (int)AccessLvlEnumerator.SuperUser);
             if (superUserRole is not null)
                 throw new Exception("The superuser role already exists");
@@ -84,8 +83,8 @@ public class RolesRepository : IRolesRepository
 
     public async Task<Guid> DeleteRole(Guid roleId)
     {
-        var userWithRole = (await _usersRepository.GetAllUsers())
-            .FirstOrDefault(user => user.Role.Id == roleId);
+        var userWithRole = await _context.Users
+            .FirstOrDefaultAsync(user => user.Role.Id == roleId);
         if (userWithRole is not null)
             throw new Exception($"Deleting a role \"{roleId}\" is destructive, " +
                                 $"user \"{userWithRole.Id}\" has this role");
@@ -95,12 +94,12 @@ public class RolesRepository : IRolesRepository
         if (role is not null && role.AccessLvl == (int)AccessLvlEnumerator.SuperUser)
             throw new Exception("You cannot delete the superuser role");
 
-        var numUpdated = await _context.Roles
+        if (role is null)
+            throw new Exception($"Unknown role id: \"{roleId}\"");
+
+        await _context.Roles
             .Where(r => r.Id == roleId)
             .ExecuteDeleteAsync();
-
-        if (numUpdated == 0)
-            throw new Exception($"Unknown role id: \"{roleId}\"");
 
         return roleId;
     }

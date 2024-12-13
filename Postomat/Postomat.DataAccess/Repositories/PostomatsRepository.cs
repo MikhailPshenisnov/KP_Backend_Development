@@ -9,14 +9,11 @@ public class PostomatsRepository : IPostomatsRepository
 {
     private readonly PostomatDbContext _context;
     private readonly ICellsRepository _cellsRepository;
-    private readonly IOrderPlansRepository _orderPlansRepository;
 
-    public PostomatsRepository(PostomatDbContext context, ICellsRepository cellsRepository,
-        IOrderPlansRepository orderPlansRepository)
+    public PostomatsRepository(PostomatDbContext context, ICellsRepository cellsRepository)
     {
         _context = context;
         _cellsRepository = cellsRepository;
-        _orderPlansRepository = orderPlansRepository;
     }
 
     public async Task<Guid> CreatePostomat(Core.Models.Postomat postomat)
@@ -43,24 +40,22 @@ public class PostomatsRepository : IPostomatsRepository
             .AsNoTracking()
             .ToListAsync();
 
+        List<Cell> cells;
+        try
+        {
+            cells = await _cellsRepository.GetAllCells();
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"An error occurred when getting the postomats {e.Message}");
+        }
+
         var postomats = new List<Core.Models.Postomat>();
         foreach (var postomatEntity in postomatEntities)
         {
-            List<Cell> postomatCells;
-
-            try
-            {
-                postomatCells = (await _cellsRepository.GetAllCells())
-                    .Where(c => c.PostomatId == postomatEntity.Id)
-                    .ToList();
-            }
-            catch (Exception e)
-            {
-                /* TODO */
-                // Если в Cell сделать warn, то ошибка должна пропасть
-                throw new Exception($"An error occurred when getting the postomat \"{postomatEntity.Id}\": " +
-                                    $"{e.Message}");
-            }
+            var postomatCells = cells
+                .Where(c => c.PostomatId == postomatEntity.Id)
+                .ToList();
 
             postomats.Add(Core.Models.Postomat
                 .Create(
@@ -99,25 +94,23 @@ public class PostomatsRepository : IPostomatsRepository
     {
         var postomat = (await GetAllPostomats())
             .FirstOrDefault(p => p.Id == postomatId);
-        if (postomat?.Cells.Count != 0)
+
+        if (postomat is null)
+            throw new Exception($"Unknown postomat id: \"{postomatId}\"");
+
+        if (postomat.Cells.Count != 0)
             throw new Exception($"Deleting a postomat \"{postomatId}\" is destructive, " +
                                 $"it contains cells, delete them first");
 
-        var orderPlanWithPostomat = (await _orderPlansRepository.GetAllOrderPlans())
-            .FirstOrDefault(orderPlan => orderPlan.Postomat.Id == postomatId);
+        var orderPlanWithPostomat = await _context.OrderPlans
+            .FirstOrDefaultAsync(op => op.Postomat.Id == postomatId);
         if (orderPlanWithPostomat is not null)
             throw new Exception($"Deleting a postomat \"{postomatId}\" is destructive, " +
                                 $"it is contained in an order plan \"{orderPlanWithPostomat.Id}\"");
 
-
-        var numUpdated = await _context.Postomats
+        await _context.Postomats
             .Where(p => p.Id == postomatId)
             .ExecuteDeleteAsync();
-
-        if (numUpdated == 0)
-        {
-            throw new Exception($"Unknown postomat id: \"{postomatId}\"");
-        }
 
         return postomatId;
     }
