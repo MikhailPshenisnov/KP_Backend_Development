@@ -49,16 +49,17 @@ public class OrdersRepository : IOrdersRepository
 
     public async Task<Guid> UpdateOrder(Guid orderId, Order newOrder)
     {
-        var oldOrder = (await GetAllOrders())
-            .FirstOrDefault(o => o.Id == orderId);
-        if (oldOrder is null)
+        var oldOrderEntity = await _context.Orders
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+        if (oldOrderEntity is null)
             throw new Exception($"Unknown order id: \"{orderId}\"");
 
-        var cellWithOrder = await _context.Cells.FirstOrDefaultAsync(c => c.OrderId == oldOrder.Id);
-        if (cellWithOrder is not null && newOrder.OrderSize > cellWithOrder.CellSize)
+        var cellWithOrderEntity = await _context.Cells
+            .FirstOrDefaultAsync(c => c.OrderId == oldOrderEntity.Id);
+        if (cellWithOrderEntity is not null && newOrder.OrderSize > cellWithOrderEntity.CellSize)
             throw new Exception($"It is impossible to change the order size for order \"{orderId}\", " +
                                 $"due to the discrepancy between the new size and the size of the " +
-                                $"cell \"{cellWithOrder.Id}\" in which the order is already stored");
+                                $"cell \"{cellWithOrderEntity.Id}\" in which the order is already stored");
 
         await _context.Orders
             .Where(o => o.Id == orderId)
@@ -71,18 +72,18 @@ public class OrdersRepository : IOrdersRepository
 
     public async Task<Guid> DeleteOrder(Guid orderId)
     {
-        var cellWithOrder = await _context.Cells
+        var cellWithOrderEntity = await _context.Cells
             .FirstOrDefaultAsync(c => c.OrderId == orderId);
-        if (cellWithOrder is not null)
+        if (cellWithOrderEntity is not null)
             throw new Exception($"Deleting an order \"{orderId}\" is destructive, " +
-                                $"it is contained in a cell \"{cellWithOrder.Id}\" " +
-                                $"at the postomat \"{cellWithOrder.PostomatId}\"");
+                                $"it is contained in a cell \"{cellWithOrderEntity.Id}\" " +
+                                $"at the postomat \"{cellWithOrderEntity.PostomatId}\"");
 
-        var orderPlanWithOrder = await _context.OrderPlans
+        var orderPlanWithOrderEntity = await _context.OrderPlans
             .FirstOrDefaultAsync(op => op.Order.Id == orderId);
-        if (orderPlanWithOrder is not null)
+        if (orderPlanWithOrderEntity is not null)
             throw new Exception($"Deleting an order \"{orderId}\" is destructive, " +
-                                $"it is contained in an order plan \"{orderPlanWithOrder.Id}\"");
+                                $"it is contained in an order plan \"{orderPlanWithOrderEntity.Id}\"");
 
         var numUpdated = await _context.Orders
             .Where(o => o.Id == orderId)

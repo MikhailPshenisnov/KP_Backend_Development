@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions;
-using Postomat.Core.Models;
 using Postomat.DataAccess.Database.Context;
 
 namespace Postomat.DataAccess.Repositories;
@@ -40,30 +39,25 @@ public class PostomatsRepository : IPostomatsRepository
             .AsNoTracking()
             .ToListAsync();
 
-        List<Cell> cells;
-        try
-        {
-            cells = await _cellsRepository.GetAllCells();
-        }
-        catch (Exception e)
-        {
-            throw new Exception($"An error occurred when getting the postomats {e.Message}");
-        }
-
         var postomats = new List<Core.Models.Postomat>();
         foreach (var postomatEntity in postomatEntities)
         {
-            var postomatCells = cells
-                .Where(c => c.PostomatId == postomatEntity.Id)
-                .ToList();
+            try
+            {
+                var postomatCells = await _cellsRepository.GetPostomatCells(postomatEntity.Id);
 
-            postomats.Add(Core.Models.Postomat
-                .Create(
-                    postomatEntity.Id,
-                    postomatEntity.Name,
-                    postomatEntity.Address,
-                    postomatCells)
-                .Postomat);
+                postomats.Add(Core.Models.Postomat
+                    .Create(
+                        postomatEntity.Id,
+                        postomatEntity.Name,
+                        postomatEntity.Address,
+                        postomatCells)
+                    .Postomat);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"An error occurred when getting the postomats: {e.Message}");
+            }
         }
 
         return postomats;
@@ -78,8 +72,8 @@ public class PostomatsRepository : IPostomatsRepository
             throw new Exception($"Unknown postomat id: \"{postomatId}\"");
 
         if (oldPostomat.Cells != newPostomat.Cells)
-            throw new Exception("You cannot change postomat cells from here, " +
-                                "use cells repository for that");
+            throw new Exception("You cannot change postomat cells from postomat" +
+                                "repository, use cells repository for that");
 
         await _context.Postomats
             .Where(p => p.Id == postomatId)
@@ -94,16 +88,14 @@ public class PostomatsRepository : IPostomatsRepository
     {
         var postomat = (await GetAllPostomats())
             .FirstOrDefault(p => p.Id == postomatId);
-
         if (postomat is null)
             throw new Exception($"Unknown postomat id: \"{postomatId}\"");
-
         if (postomat.Cells.Count != 0)
             throw new Exception($"Deleting a postomat \"{postomatId}\" is destructive, " +
                                 $"it contains cells, delete them first");
 
         var orderPlanWithPostomat = await _context.OrderPlans
-            .FirstOrDefaultAsync(op => op.Postomat.Id == postomatId);
+            .FirstOrDefaultAsync(op => op.PostomatId == postomatId);
         if (orderPlanWithPostomat is not null)
             throw new Exception($"Deleting a postomat \"{postomatId}\" is destructive, " +
                                 $"it is contained in an order plan \"{orderPlanWithPostomat.Id}\"");

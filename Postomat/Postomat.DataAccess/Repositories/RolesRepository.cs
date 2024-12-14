@@ -18,9 +18,9 @@ public class RolesRepository : IRolesRepository
     {
         if (role.AccessLvl == (int)AccessLvlEnumerator.SuperUser)
         {
-            var superUserRole = (await GetAllRoles())
-                .FirstOrDefault(r => r.AccessLvl == (int)AccessLvlEnumerator.SuperUser);
-            if (superUserRole is not null)
+            var superUserRoleEntity = await _context.Roles
+                .FirstOrDefaultAsync(r => r.AccessLvl == (int)AccessLvlEnumerator.SuperUser);
+            if (superUserRoleEntity is not null)
                 throw new Exception("The superuser role already exists");
         }
 
@@ -57,18 +57,30 @@ public class RolesRepository : IRolesRepository
 
     public async Task<Guid> UpdateRole(Guid roleId, Role newRole)
     {
-        var allRoles = await GetAllRoles();
+        var allRoleEntities = await _context.Roles.ToListAsync();
 
-        var oldRole = allRoles
+        var oldRoleEntity = allRoleEntities
             .FirstOrDefault(r => r.Id == roleId);
-        if (oldRole is null)
+        if (oldRoleEntity is null)
             throw new Exception($"Unknown role id: \"{roleId}\"");
 
-        if (newRole.AccessLvl == (int)AccessLvlEnumerator.SuperUser)
+        if (oldRoleEntity.AccessLvl == (int)AccessLvlEnumerator.SuperUser &&
+            newRole.AccessLvl != oldRoleEntity.AccessLvl)
+            throw new Exception("You cannot change the superuser access level");
+        
+        if (oldRoleEntity.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee &&
+            newRole.AccessLvl != oldRoleEntity.AccessLvl &&
+            allRoleEntities
+                .Where(r => r.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee)
+                .ToList().Count == 1)
+            throw new Exception("You cannot change last base user role");
+
+        if (oldRoleEntity.AccessLvl != (int)AccessLvlEnumerator.SuperUser &&
+            newRole.AccessLvl == (int)AccessLvlEnumerator.SuperUser)
         {
-            var superUserRole = allRoles
+            var superUserRoleEntity = allRoleEntities
                 .FirstOrDefault(r => r.AccessLvl == (int)AccessLvlEnumerator.SuperUser);
-            if (superUserRole is not null)
+            if (superUserRoleEntity is not null)
                 throw new Exception("The superuser role already exists");
         }
 
@@ -83,19 +95,24 @@ public class RolesRepository : IRolesRepository
 
     public async Task<Guid> DeleteRole(Guid roleId)
     {
-        var userWithRole = await _context.Users
-            .FirstOrDefaultAsync(user => user.Role.Id == roleId);
-        if (userWithRole is not null)
+        var userWithRoleEntity = await _context.Users
+            .FirstOrDefaultAsync(u => u.Role.Id == roleId);
+        if (userWithRoleEntity is not null)
             throw new Exception($"Deleting a role \"{roleId}\" is destructive, " +
-                                $"user \"{userWithRole.Id}\" has this role");
+                                $"user \"{userWithRoleEntity.Id}\" has this role");
 
-        var role = (await GetAllRoles())
+        var allRoleEntities = await _context.Roles.ToListAsync();
+        var roleEntity = allRoleEntities
             .FirstOrDefault(r => r.Id == roleId);
-        if (role is not null && role.AccessLvl == (int)AccessLvlEnumerator.SuperUser)
-            throw new Exception("You cannot delete the superuser role");
-
-        if (role is null)
+        if (roleEntity is null)
             throw new Exception($"Unknown role id: \"{roleId}\"");
+        if (roleEntity.AccessLvl == (int)AccessLvlEnumerator.SuperUser)
+            throw new Exception("You cannot delete the superuser role");
+        if (roleEntity.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee &&
+            allRoleEntities
+                .Where(r => r.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee)
+                .ToList().Count == 1)
+            throw new Exception("You cannot delete last base user role");
 
         await _context.Roles
             .Where(r => r.Id == roleId)
