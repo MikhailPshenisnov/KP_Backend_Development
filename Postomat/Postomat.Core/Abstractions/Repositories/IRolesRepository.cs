@@ -1,6 +1,6 @@
 ﻿using Postomat.Core.Models;
 
-namespace Postomat.Core.Abstractions;
+namespace Postomat.Core.Abstractions.Repositories;
 
 public interface IRolesRepository
 {

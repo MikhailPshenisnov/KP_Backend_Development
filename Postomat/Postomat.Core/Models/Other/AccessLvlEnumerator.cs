@@ -1,4 +1,4 @@
-﻿namespace Postomat.Core.Models;
+﻿namespace Postomat.Core.Models.Other;
 
 public enum AccessLvlEnumerator
 {

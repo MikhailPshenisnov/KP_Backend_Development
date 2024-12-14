@@ -1,4 +1,6 @@
-﻿namespace Postomat.Core.Models;
+﻿using Postomat.Core.Models.Other;
+
+namespace Postomat.Core.Models;
 
 public class Order
 {

@@ -1,4 +1,4 @@
-﻿namespace Postomat.Core.Abstractions;
+﻿namespace Postomat.Core.Abstractions.Repositories;
 
 public interface IPostomatsRepository
 {

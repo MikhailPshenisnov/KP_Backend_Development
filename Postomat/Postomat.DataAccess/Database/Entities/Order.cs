@@ -1,4 +1,5 @@
 ﻿using Postomat.Core.Models;
+using Postomat.Core.Models.Other;
 
 namespace Postomat.DataAccess.Database.Entities;
 

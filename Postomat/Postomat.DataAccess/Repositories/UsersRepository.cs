@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions;
+using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Models;
+using Postomat.Core.Models.Other;
 using Postomat.DataAccess.Database.Context;
 
 namespace Postomat.DataAccess.Repositories;
@@ -133,7 +135,7 @@ public class UsersRepository : IUsersRepository
             throw new Exception("You cannot delete the superuser");
 
         if (user.Role.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee &&
-            (users.Where(u => u.Role.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee).ToList()).Count == 1)
+            users.Where(u => u.Role.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee).ToList().Count == 1)
         {
             throw new Exception("You cannot delete last base user role");
         }

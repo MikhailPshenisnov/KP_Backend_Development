@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions;
+using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Models;
 using Postomat.DataAccess.Database.Context;
 
@@ -46,12 +47,13 @@ public class CellsRepository : ICellsRepository
             .AsNoTracking()
             .ToListAsync();
 
-        if (cellEntities is null)
-            throw new Exception($"Unknown postomat id: \"{postomatId}\"");
+        var cells = new List<Cell>();
+
+        if (cellEntities.Count == 0)
+            return cells;
 
         var orderEntities = await _context.Orders.ToListAsync();
 
-        var cells = new List<Cell>();
         foreach (var cellEntity in cellEntities)
         {
             var orderEntity = cellEntity.OrderId is not null

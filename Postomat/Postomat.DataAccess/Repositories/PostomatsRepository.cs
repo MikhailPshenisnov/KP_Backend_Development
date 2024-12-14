@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions;
+using Postomat.Core.Abstractions.Repositories;
 using Postomat.DataAccess.Database.Context;
 
 namespace Postomat.DataAccess.Repositories;
