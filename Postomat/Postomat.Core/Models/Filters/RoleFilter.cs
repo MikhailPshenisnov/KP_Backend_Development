@@ -1,6 +1,4 @@
-﻿using Postomat.Core.Models.Other;
-
-namespace Postomat.Core.Models.Filters;
+﻿namespace Postomat.Core.Models.Filters;
 
 public class RoleFilter
 {

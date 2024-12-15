@@ -18,6 +18,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Postomat.Core\Postomat.Core.csproj" />
+      <ProjectReference Include="..\Postomat.DataAccess\Postomat.DataAccess.csproj" />
     </ItemGroup>
 
 </Project>

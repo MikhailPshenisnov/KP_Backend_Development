@@ -1,5 +1,5 @@
 ﻿using Postomat.Core.Models;
-using Postomat.Core.Models.Filtres;
+using Postomat.Core.Models.Filters;
 
 namespace Postomat.Core.Abstractions.Services;
 

@@ -10,12 +10,10 @@ namespace Postomat.DataAccess.Repositories;
 public class UsersRepository : IUsersRepository
 {
     private readonly PostomatDbContext _context;
-    private readonly IRolesRepository _rolesRepository;
 
-    public UsersRepository(PostomatDbContext context, IRolesRepository rolesRepository)
+    public UsersRepository(PostomatDbContext context)
     {
         _context = context;
-        _rolesRepository = rolesRepository;
     }
 
     public async Task<Guid> CreateUser(User user)

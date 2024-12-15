@@ -1,4 +1,4 @@
-﻿namespace Postomat.Core.Models.Filtres;
+﻿namespace Postomat.Core.Models.Filters;
 
 public class OrderPlanFilter
 {
