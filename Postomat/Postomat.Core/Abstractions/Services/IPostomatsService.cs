@@ -14,7 +14,7 @@ public interface IPostomatsService
     Task<Guid> AddCellToPostomatAsync(Cell cell, CancellationToken ct);
     Task<(Guid CellId, Guid OrderPlanId)> FillCellInPostomatAsync(User user, Guid postomatId, Order order, 
         CancellationToken ct);
-    Task<(Guid CellId, Guid OrderPlanId)> ClearCellInPostomatAsync(User user, Guid postomatId, Order order, 
+    Task<(Guid CellId, Guid OrderPlanId)> ClearCellInPostomatAsync(User? user, Guid postomatId, Order order, 
         CancellationToken ct);
     Task<Guid> DeleteCellFromPostomatAsync(Guid cellId, CancellationToken ct);
 }

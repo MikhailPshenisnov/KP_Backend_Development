@@ -148,6 +148,20 @@ public class CellsRepository : ICellsRepository
         if (newCell.Order is not null && newCellOrderEntity is null)
             throw new Exception($"New cell \"{oldCellEntity.Id}\"/\"{newCell.Id}\" has unknown order id");
 
+        if (newCellOrderEntity is not null)
+        {
+            var orderPlanEntities = await _context.OrderPlans.ToListAsync();
+            var newCellOrderOrderPlanEntity = orderPlanEntities
+                .FirstOrDefault(op => op.OrderId == newCellOrderEntity.Id && op.PostomatId == postomatEntity.Id);
+            if (newCellOrderOrderPlanEntity is null)
+            {
+                throw new Exception($"A discrepancy was detected between the postomat and the order plan " +
+                                    $"when delivering the order {newCellOrderEntity.Id}.");
+            }
+        }
+
+        
+        
         var orderId = newCell.Order?.Id;
         await _context.Cells
             .Where(c => c.Id == cellId)

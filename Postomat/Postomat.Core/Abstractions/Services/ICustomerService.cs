@@ -2,5 +2,5 @@
 
 public interface ICustomerService
 {
-    Task<Guid> ReceiveOrderAsync(Guid orderId, Guid postomatId, CancellationToken ct);
+    Task<Guid> ReceiveOrderAsync(string receivingCode, Guid postomatId, CancellationToken ct);
 }
