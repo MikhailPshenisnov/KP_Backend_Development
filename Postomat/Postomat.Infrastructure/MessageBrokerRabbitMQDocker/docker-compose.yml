@@ -1,0 +1,12 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    container_name: postomat-rabbitmq-container
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - postomat_rabbitmq_data:/var/lib/rabbitmq
+    restart: always
+volumes:
+  postomat_rabbitmq_data:

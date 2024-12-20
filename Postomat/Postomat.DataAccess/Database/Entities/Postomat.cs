@@ -1,6 +1,6 @@
 ﻿namespace Postomat.DataAccess.Database.Entities;
 
-public partial class Postomat
+public class Postomat
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = null!;

@@ -1,9 +1,8 @@
-﻿using Postomat.Core.Models;
-using Postomat.Core.Models.Other;
+﻿using Postomat.Core.Models.Other;
 
 namespace Postomat.DataAccess.Database.Entities;
 
-public partial class Cell
+public class Cell
 {
     public Guid Id { get; set; }
     public SizeEnumerator CellSize { get; set; }

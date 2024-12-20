@@ -1,6 +1,6 @@
 ﻿namespace Postomat.DataAccess.Database.Entities;
 
-public partial class OrderPlan
+public class OrderPlan
 {
     public Guid Id { get; set; }
     public string Status { get; set; } = null!;

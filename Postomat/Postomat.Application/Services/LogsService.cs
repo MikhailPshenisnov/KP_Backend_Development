@@ -24,10 +24,10 @@ public class LogsService : ILogsService
             var createdLogId = await _logsRepository.CreateLog(log);
 
             if (log.Type == "Error")
-                _logger.LogError("{logDate} ({logType} log from {logOrigin}) \"{logTitle}\":\n{logMessage}",
+                _logger.LogError("{LogDate} ({LogType} log from {LogOrigin}) \"{LogTitle}\":\n{LogMessage}",
                     log.Date, log.Type, log.Origin, log.Title, log.Message);
             else
-                _logger.LogInformation("{logDate} ({logType} log from {logOrigin}) \"{logTitle}\":\n{logMessage}",
+                _logger.LogInformation("{LogDate} ({LogType} log from {LogOrigin}) \"{LogTitle}\":\n{LogMessage}",
                     log.Date, log.Type, log.Origin, log.Title, log.Message);
 
             return createdLogId;
@@ -35,7 +35,7 @@ public class LogsService : ILogsService
         catch (Exception e)
         {
             _logger.LogError("Something went wrong during the log creation process, " +
-                             "the log was not created: {message}", e.Message);
+                             "the log was not created: {Message}", e.Message);
             throw new Exception($"Unable to create log \"{log.Id}\": \"{e.Message}\"");
         }
     }

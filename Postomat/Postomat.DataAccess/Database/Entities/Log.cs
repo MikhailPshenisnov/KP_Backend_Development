@@ -1,6 +1,6 @@
 ﻿namespace Postomat.DataAccess.Database.Entities;
 
-public partial class Log
+public class Log
 {
     public Guid Id { get; set; }
     public DateTime Date { get; set; }

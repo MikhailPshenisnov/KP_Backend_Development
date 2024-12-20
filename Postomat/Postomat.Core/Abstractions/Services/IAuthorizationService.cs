@@ -2,8 +2,6 @@
 
 public interface IAuthorizationService
 {
-    Task<Guid> RegisterUserAsync(string login, string password, CancellationToken ct);
-    Task<string> LoginUserAsync(string login, string password, CancellationToken ct);
-    Task<string> LogoutUserAsync(CancellationToken ct);
-    Task<int> GetAccessLvlFromTokenAsync(string login, string password, CancellationToken ct);
+    Task<string> LoginUser(string login, string password, CancellationToken ct);
+    Task<(Guid userId, Guid roleId)> ValidateToken(string token, CancellationToken ct);
 }

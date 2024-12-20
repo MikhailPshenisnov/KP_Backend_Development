@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Postomat.Core.Abstractions;
 using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Other;

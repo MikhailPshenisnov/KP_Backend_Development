@@ -54,7 +54,7 @@ public class Log
 
         var universalDate = date.ToUniversalTime();
 
-        var log = new Log(id, date, origin, type, title, message);
+        var log = new Log(id, universalDate, origin, type, title, message);
 
         return (log, error);
     }

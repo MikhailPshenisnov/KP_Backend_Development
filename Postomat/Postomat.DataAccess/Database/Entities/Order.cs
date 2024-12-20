@@ -1,9 +1,8 @@
-﻿using Postomat.Core.Models;
-using Postomat.Core.Models.Other;
+﻿using Postomat.Core.Models.Other;
 
 namespace Postomat.DataAccess.Database.Entities;
 
-public partial class Order
+public class Order
 {
     public Guid Id { get; set; }
     public string ReceivingCodeHash { get; set; } = null!;

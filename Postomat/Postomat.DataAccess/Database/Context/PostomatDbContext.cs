@@ -4,7 +4,7 @@ using Postomat.DataAccess.Database.Entities;
 
 namespace Postomat.DataAccess.Database.Context;
 
-public partial class PostomatDbContext : DbContext
+public class PostomatDbContext : DbContext
 {
     private readonly IConfiguration _configuration;
 
@@ -121,9 +121,5 @@ public partial class PostomatDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Users_RoleId_fkey");
         });
-
-        OnModelCreatingPartial(modelBuilder);
     }
-
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
