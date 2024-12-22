@@ -1,8 +1,9 @@
-using Postomat.DataAccess.Database.Context;
 using MassTransit;
 using Postomat.Application.Services;
 using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.MessageBrokerContracts.Requests;
+using Postomat.DataAccess.Database.Context;
 using Postomat.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,10 +12,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Authorization
+builder.Services.AddAuthorization();
+
 // Services for controllers
+builder.Services.AddTransient<IAuthorizationService, AuthorizationService>();
 builder.Services.AddTransient<ICustomerService, CustomerService>();
 builder.Services.AddTransient<IDeliveryService, DeliveryService>();
-builder.Services.AddTransient<IAuthorizationService, AuthorizationService>();
 builder.Services.AddTransient<ILogsService, LogsService>();
 builder.Services.AddTransient<IOrderPlansService, OrderPlansService>();
 builder.Services.AddTransient<IOrdersService, OrdersService>();
@@ -35,47 +39,37 @@ builder.Services.AddTransient<IUsersRepository, UsersRepository>();
 builder.Services.AddDbContext<PostomatDbContext>();
 
 // CORS policy
-builder.Services.AddCors(options => options.AddPolicy
-    (
-        "PostomatApiPolicy", b => b
-            .WithOrigins
-            (
-                "https://localhost:5173" // frontend address
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials()
-    )
+builder.Services.AddCors(options => options.AddPolicy(
+    "PostomatApiPolicy", b => b
+        .WithOrigins("https://localhost:5173") // frontend address
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials())
 );
 
+// Message broker
 builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        cfg.Host("rabbitmq://localhost", h =>
         {
-            h.Username("admin_user");
-            h.Password("admin");
-        });
-
-        cfg.ReceiveEndpoint("auth_service", e =>
-        {
-            e.ConfigureConsumers(context);
-        });
-
-        cfg.ReceiveEndpoint("logging_service", e =>
-        {
-            e.ConfigureConsumers(context);
+            h.Username("guest");
+            h.Password("guest");
         });
     });
 
-    x.AddConsumer<AuthRequestConsumer>();
-    x.AddConsumer<LoggingRequestConsumer>();
+    x.AddRequestClient<MicroserviceLoginUserRequest>();
+    x.AddRequestClient<MicroserviceValidateTokenRequest>();
+    x.AddRequestClient<MicroserviceCreateLogRequest>();
+    x.AddRequestClient<MicroserviceGetFilteredLogsRequest>();
+    x.AddRequestClient<MicroserviceUpdateLogRequest>();
+    x.AddRequestClient<MicroserviceDeleteLogRequest>();
 });
-
 
 var app = builder.Build();
 
+// Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

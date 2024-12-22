@@ -31,7 +31,7 @@ public class OrderPlansRepository : IOrderPlansRepository
             .FirstOrDefaultAsync(op => op.OrderId == orderPlan.Order.Id);
         if (existedOrderPlan is not null)
             throw new Exception($"An order plan for the order \"{orderPlan.Order.Id}\" already exists");
-        
+
         var order = await _context.Orders
             .FirstOrDefaultAsync(o => o.Id == orderPlan.Order.Id);
         if (order is null)

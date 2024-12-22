@@ -82,7 +82,8 @@ public class DeliveryService : IDeliveryService
 
             var orderIds = (await _orderPlansService
                     .GetFilteredOrderPlansAsync(filter.OrderPlanFilter, ct))
-                .Where(op => BCrypt.Net.BCrypt.EnhancedVerify(deliveryCode, op.DeliveryCodeHash))
+                .Where(op => BCrypt.Net.BCrypt.EnhancedVerify(deliveryCode, op.DeliveryCodeHash) &&
+                             op.StoreUntilDate < DateTime.Now.ToUniversalTime())
                 .Select(op => op.Order.Id)
                 .ToList();
             if (orderIds.Count == 0)

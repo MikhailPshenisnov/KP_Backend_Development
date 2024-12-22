@@ -68,7 +68,7 @@ public class RolesRepository : IRolesRepository
         if (oldRoleEntity.AccessLvl == (int)AccessLvlEnumerator.SuperUser &&
             newRole.AccessLvl != oldRoleEntity.AccessLvl)
             throw new Exception("You cannot change the superuser access level");
-        
+
         if (oldRoleEntity.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee &&
             newRole.AccessLvl != oldRoleEntity.AccessLvl &&
             allRoleEntities

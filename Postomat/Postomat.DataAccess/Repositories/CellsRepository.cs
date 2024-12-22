@@ -159,8 +159,7 @@ public class CellsRepository : ICellsRepository
             }
         }
 
-        
-        
+
         var orderId = newCell.Order?.Id;
         await _context.Cells
             .Where(c => c.Id == cellId)
