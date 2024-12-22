@@ -21,7 +21,7 @@ public class Postomat
     private static string BasicChecks(string name, string address, List<Cell> cells)
     {
         var error = string.Empty;
-        
+
         if (cells.Count == 0)
         {
             error = "Postomat must have at least one cell";

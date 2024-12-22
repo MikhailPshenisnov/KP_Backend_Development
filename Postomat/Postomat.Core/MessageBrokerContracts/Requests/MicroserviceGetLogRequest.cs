@@ -1,5 +1,5 @@
 ﻿namespace Postomat.Core.MessageBrokerContracts.Requests;
 
-public record MicroserviceDeleteLogRequest(
+public record MicroserviceGetLogRequest(
     Guid LogId
 );

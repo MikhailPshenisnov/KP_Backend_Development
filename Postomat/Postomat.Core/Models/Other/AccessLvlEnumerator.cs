@@ -7,5 +7,4 @@ public enum AccessLvlEnumerator
     JuniorAdministrator = 10,
     DeliveryMan = 100,
     FiredEmployee = 999
-    
 }

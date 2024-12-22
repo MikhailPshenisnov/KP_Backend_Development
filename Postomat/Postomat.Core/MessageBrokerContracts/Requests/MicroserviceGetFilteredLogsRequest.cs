@@ -1,3 +1,7 @@
-﻿namespace Postomat.Core.MessageBrokerContracts.Requests;
+﻿using Postomat.Core.Models.Filters;
 
-public record MicroserviceGetFilteredLogsRequest();
+namespace Postomat.Core.MessageBrokerContracts.Requests;
+
+public record MicroserviceGetFilteredLogsRequest(
+    LogFilter? LogFilter
+);

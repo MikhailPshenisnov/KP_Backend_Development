@@ -15,7 +15,6 @@ public class AuthorizationService : IAuthorizationService
         _usersService = usersService;
     }
 
-
     public async Task<string> LoginUser(string login, string password, CancellationToken ct)
     {
         try

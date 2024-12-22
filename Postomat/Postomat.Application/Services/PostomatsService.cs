@@ -178,7 +178,8 @@ public class PostomatsService : IPostomatsService
         }
     }
 
-    public async Task<(Guid CellId, Guid OrderPlanId)> ClearCellInPostomatAsync(User? user, Guid postomatId, Order order,
+    public async Task<(Guid CellId, Guid OrderPlanId)> ClearCellInPostomatAsync(User? user, Guid postomatId,
+        Order order,
         CancellationToken ct)
     {
         try

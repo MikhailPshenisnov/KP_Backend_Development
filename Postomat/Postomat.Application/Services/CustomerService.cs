@@ -11,7 +11,6 @@ public class CustomerService : ICustomerService
         _postomatsService = postomatsService;
     }
 
-
     public async Task<Guid> ReceiveOrderAsync(string receivingCode, Guid postomatId, CancellationToken ct)
     {
         try
@@ -26,7 +25,7 @@ public class CustomerService : ICustomerService
 
             foreach (var cell in cellsWithOrder)
                 await _postomatsService.ClearCellInPostomatAsync(null, postomatId, cell.Order!, ct);
-            
+
             return cellsWithOrder[0].Id;
         }
         catch (Exception e)

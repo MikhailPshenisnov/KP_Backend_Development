@@ -62,6 +62,7 @@ builder.Services.AddMassTransit(x =>
     x.AddRequestClient<MicroserviceLoginUserRequest>();
     x.AddRequestClient<MicroserviceValidateTokenRequest>();
     x.AddRequestClient<MicroserviceCreateLogRequest>();
+    x.AddRequestClient<MicroserviceGetLogRequest>();
     x.AddRequestClient<MicroserviceGetFilteredLogsRequest>();
     x.AddRequestClient<MicroserviceUpdateLogRequest>();
     x.AddRequestClient<MicroserviceDeleteLogRequest>();

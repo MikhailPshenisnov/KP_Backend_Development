@@ -28,7 +28,7 @@ public class Order
 
         return error;
     }
-    
+
     public static (Order Order, string Error) Create(Guid id, string receivingCodeHash, SizeEnumerator orderSize)
     {
         var error = BasicChecks(receivingCodeHash);

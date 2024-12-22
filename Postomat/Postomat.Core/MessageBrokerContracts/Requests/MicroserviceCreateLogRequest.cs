@@ -1,3 +1,7 @@
-﻿namespace Postomat.Core.MessageBrokerContracts.Requests;
+﻿using Postomat.Core.Models;
 
-public record MicroserviceCreateLogRequest();
+namespace Postomat.Core.MessageBrokerContracts.Requests;
+
+public record MicroserviceCreateLogRequest(
+    Log Log
+);

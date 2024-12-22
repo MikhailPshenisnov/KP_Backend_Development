@@ -35,6 +35,7 @@ builder.Services.AddTransient<IUsersRepository, UsersRepository>();
 // Database context
 builder.Services.AddDbContext<PostomatDbContext>();
 
+/* TODO */
 // CORS policy
 builder.Services.AddCors(options => options.AddPolicy
     (

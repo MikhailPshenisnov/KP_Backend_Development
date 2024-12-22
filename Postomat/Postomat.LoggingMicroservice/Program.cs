@@ -4,6 +4,7 @@ using Postomat.Application.Services;
 using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
 using Postomat.DataAccess.Repositories;
+using Postomat.LoggingMicroservice.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +49,27 @@ builder.Services.AddCors(options => options.AddPolicy
             .AllowCredentials()
     )
 );
+
+// Message broker
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("rabbitmq://localhost", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
+
+    x.AddConsumer<CreateLogConsumer>();
+    x.AddConsumer<GetLogConsumer>();
+    x.AddConsumer<GetFilteredLogsConsumer>();
+    x.AddConsumer<UpdateLogConsumer>();
+    x.AddConsumer<DeleteLogConsumer>();
+});
 
 var app = builder.Build();
 

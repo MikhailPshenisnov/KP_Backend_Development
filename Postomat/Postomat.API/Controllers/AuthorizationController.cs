@@ -5,6 +5,7 @@ using Postomat.API.Contracts.Requests;
 using Postomat.API.Contracts.Responses;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
+using Postomat.Core.Models;
 
 namespace Postomat.API.Controllers;
 
@@ -14,12 +15,15 @@ public class AuthorizationController : ControllerBase
 {
     private readonly IRequestClient<MicroserviceLoginUserRequest> _loginUserClient;
     private readonly IRequestClient<MicroserviceValidateTokenRequest> _validateTokenClient;
+    private readonly IRequestClient<MicroserviceCreateLogRequest> _createLogClient;
 
     public AuthorizationController(IRequestClient<MicroserviceLoginUserRequest> loginUserClient,
-        IRequestClient<MicroserviceValidateTokenRequest> validateTokenClient)
+        IRequestClient<MicroserviceValidateTokenRequest> validateTokenClient,
+        IRequestClient<MicroserviceCreateLogRequest> createLogClient)
     {
         _loginUserClient = loginUserClient;
         _validateTokenClient = validateTokenClient;
+        _createLogClient = createLogClient;
     }
 
     [HttpPost]
@@ -56,11 +60,37 @@ public class AuthorizationController : ControllerBase
         }
         catch (Exception e)
         {
-            /* TODO */ // логирование
-            return Ok(new BaseResponse<LoginUserResponse>(
-                null,
-                e.Message
-            ));
+            try
+            {
+                var (log, error) = Log.Create(
+                    Guid.NewGuid(),
+                    DateTime.Now.ToUniversalTime(),
+                    "Authorization controller",
+                    "Error",
+                    "Error while login process",
+                    e.Message);
+                if (error is not null)
+                    throw new Exception($"Unable to create error log: {error}");
+                
+                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
+                    new MicroserviceCreateLogRequest(log)
+                );
+                if (response.Message.ErrorMessage is not null)
+                    throw new Exception($"Unable to create error log (microservice error): {error}");
+                
+                return Ok(new BaseResponse<LoginUserResponse>(
+                    null,
+                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
+                ));
+                
+            }
+            catch (Exception ex)
+            {
+                return Ok(new BaseResponse<LoginUserResponse>(
+                    null,
+                    e.Message + $" Error log was not created: \"{ex.Message}\""
+                ));
+            }
         }
     }
 
@@ -78,11 +108,37 @@ public class AuthorizationController : ControllerBase
         }
         catch (Exception e)
         {
-            /* TODO */
-            return Ok(new BaseResponse<GetCurrentUserTokenResponse>(
-                null,
-                e.Message
-            ));
+            try
+            {
+                var (log, error) = Log.Create(
+                    Guid.NewGuid(),
+                    DateTime.Now.ToUniversalTime(),
+                    "Authorization controller",
+                    "Error",
+                    "Error while getting current user token",
+                    e.Message);
+                if (error is not null)
+                    throw new Exception($"Unable to create error log: {error}");
+                
+                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
+                    new MicroserviceCreateLogRequest(log)
+                );
+                if (response.Message.ErrorMessage is not null)
+                    throw new Exception($"Unable to create error log (microservice error): {error}");
+                
+                return Ok(new BaseResponse<GetCurrentUserTokenResponse>(
+                    null,
+                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
+                ));
+                
+            }
+            catch (Exception ex)
+            {
+                return Ok(new BaseResponse<GetCurrentUserTokenResponse>(
+                    null,
+                    e.Message + $" Error log was not created: \"{ex.Message}\""
+                ));
+            }
         }
     }
 
@@ -117,14 +173,40 @@ public class AuthorizationController : ControllerBase
         }
         catch (Exception e)
         {
-            /* TODO */
-            return Ok(new BaseResponse<ValidateTokenResponse>(
-                null,
-                e.Message
-            ));
+            try
+            {
+                var (log, error) = Log.Create(
+                    Guid.NewGuid(),
+                    DateTime.Now.ToUniversalTime(),
+                    "Authorization controller",
+                    "Error",
+                    "Error while validating token",
+                    e.Message);
+                if (error is not null)
+                    throw new Exception($"Unable to create error log: {error}");
+                
+                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
+                    new MicroserviceCreateLogRequest(log)
+                );
+                if (response.Message.ErrorMessage is not null)
+                    throw new Exception($"Unable to create error log (microservice error): {error}");
+                
+                return Ok(new BaseResponse<ValidateTokenResponse>(
+                    null,
+                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
+                ));
+                
+            }
+            catch (Exception ex)
+            {
+                return Ok(new BaseResponse<ValidateTokenResponse>(
+                    null,
+                    e.Message + $" Error log was not created: \"{ex.Message}\""
+                ));
+            }
         }
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> LogoutUser()
     {
@@ -145,12 +227,37 @@ public class AuthorizationController : ControllerBase
         }
         catch (Exception e)
         {
-            /* TODO */
-            return Ok(new BaseResponse<LogoutUserResponse>
-            (
-                null,
-                e.Message
-            ));
+            try
+            {
+                var (log, error) = Log.Create(
+                    Guid.NewGuid(),
+                    DateTime.Now.ToUniversalTime(),
+                    "Authorization controller",
+                    "Error",
+                    "Error while logout user",
+                    e.Message);
+                if (error is not null)
+                    throw new Exception($"Unable to create error log: {error}");
+                
+                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
+                    new MicroserviceCreateLogRequest(log)
+                );
+                if (response.Message.ErrorMessage is not null)
+                    throw new Exception($"Unable to create error log (microservice error): {error}");
+                
+                return Ok(new BaseResponse<LogoutUserResponse>(
+                    null,
+                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
+                ));
+                
+            }
+            catch (Exception ex)
+            {
+                return Ok(new BaseResponse<LogoutUserResponse>(
+                    null,
+                    e.Message + $" Error log was not created: \"{ex.Message}\""
+                ));
+            }
         }
     }
 }
