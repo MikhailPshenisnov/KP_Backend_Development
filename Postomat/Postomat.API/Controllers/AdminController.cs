@@ -49,36 +49,6 @@ public class AdminController : ControllerBase
         _controllerErrorLogService = controllerErrorLogService;
     }
 
-    // private async Task<BaseResponse<T>> CreateErrorLog<T>(string origin, string title, string message)
-    // {
-    //     try
-    //     {
-    //         var (log, error) = Log.Create(Guid.NewGuid(), DateTime.Now.ToUniversalTime(), origin, "Error",
-    //             title, message);
-    //
-    //         if (!error.IsNullOrEmpty())
-    //             throw new Exception($"Unable to create error log: {error}");
-    //
-    //         var response = (await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
-    //             new MicroserviceCreateLogRequest(new LogDto(log.Id, log.Date, log.Origin, log.Type, log.Title,
-    //                 log.Message)))).Message;
-    //
-    //         if (response.ErrorMessage is not null)
-    //             throw new Exception($"Unable to create error log (microservice error): {error}");
-    //
-    //         return new BaseResponse<T>(
-    //             null,
-    //             message + $" Error log was created: \"{response.CreatedLogId}\"");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         return new BaseResponse<T>(
-    //             null,
-    //             message + $" Error log was not created: \"{ex.Message}\""
-    //         );
-    //     }
-    // }
-
     private async Task<(bool CheckResult, User? User)> CheckAccessLvl(string token, int minAccessLvl,
         CancellationToken cancellationToken)
     {
@@ -115,11 +85,6 @@ public class AdminController : ControllerBase
         {
             return Ok(await _controllerErrorLogService.CreateErrorLog<ReceiveOrderResponse>(
                 "Admin controller", "Error while receiving order", e.Message));
-            // return Ok(new BaseResponse<ReceiveOrderResponse>
-            // (
-            //     null,
-            //     e.Message
-            // ));
         }
     }
 
@@ -144,11 +109,6 @@ public class AdminController : ControllerBase
         {
             return Ok(await _controllerErrorLogService.CreateErrorLog<DeliverOrderResponse>(
                 "Admin controller", "Error while delivering order", e.Message));
-            // return Ok(new BaseResponse<DeliverOrderResponse>
-            // (
-            //     null,
-            //     e.Message
-            // ));
         }
     }
 
@@ -173,11 +133,6 @@ public class AdminController : ControllerBase
         {
             return Ok(await _controllerErrorLogService.CreateErrorLog<DeliverOrderBackResponse>(
                 "Admin controller", "Error while delivering order back", e.Message));
-            // return Ok(new BaseResponse<DeliverOrderBackResponse>
-            // (
-            //     null,
-            //     e.Message
-            // ));
         }
     }
 }
