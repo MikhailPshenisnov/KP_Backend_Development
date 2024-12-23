@@ -1,7 +1,10 @@
 ﻿using MassTransit;
+using Microsoft.IdentityModel.Tokens;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.MessageBrokerContracts;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
+using Postomat.Core.Models.Filters;
 
 namespace Postomat.LoggingMicroservice.Consumers;
 
@@ -19,10 +22,21 @@ public class GetFilteredLogsConsumer : IConsumer<MicroserviceGetFilteredLogsRequ
         try
         {
             var request = context.Message;
-            var logs = await _logsService.GetFilteredLogsAsync(request.LogFilter, new CancellationToken());
+
+            var (logFilter, error) = request.LogFilterDto is not null
+                ? LogFilter.Create(request.LogFilterDto.DateFrom, request.LogFilterDto.DateTo,
+                    request.LogFilterDto.PartOfOrigin, request.LogFilterDto.PartOfType,
+                    request.LogFilterDto.PartOfTitle,
+                    request.LogFilterDto.PartOfMessage)
+                : (null, null);
+
+            if (!error.IsNullOrEmpty())
+                throw new Exception("Unable to convert log filter dto to log filter model");
+
+            var logs = await _logsService.GetFilteredLogsAsync(logFilter, new CancellationToken());
 
             await context.RespondAsync(new MicroserviceGetFilteredLogsResponse(
-                logs,
+                logs.Select(log => new LogDto(log.Id, log.Date, log.Origin, log.Type, log.Title, log.Message)).ToList(),
                 null));
         }
         catch (Exception e)

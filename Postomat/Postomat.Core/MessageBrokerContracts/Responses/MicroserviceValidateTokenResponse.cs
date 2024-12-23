@@ -2,6 +2,6 @@
 
 public record MicroserviceValidateTokenResponse(
     bool IsValid,
-    UserDto? User,
+    UserDto? UserDto,
     string? ErrorMessage
 );

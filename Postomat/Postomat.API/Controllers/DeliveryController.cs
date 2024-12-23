@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Postomat.API.Contracts.Requests;
 using Postomat.API.Contracts.Responses;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Contracrs;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
 using Postomat.Core.Models;
@@ -17,19 +18,32 @@ public class DeliveryController : ControllerBase
 {
     private readonly IDeliveryService _deliveryService;
     private readonly IUsersService _usersService;
-    private readonly IRolesService _rolesService;
     private readonly IRequestClient<MicroserviceValidateTokenRequest> _validateTokenClient;
-    private readonly IRequestClient<MicroserviceCreateLogRequest> _createLogClient;
+    private readonly IControllerErrorLogService _controllerErrorLogService;
 
-    public DeliveryController(IDeliveryService deliveryService, IUsersService usersService, IRolesService rolesService,
+    public DeliveryController(IDeliveryService deliveryService, IUsersService usersService,
         IRequestClient<MicroserviceValidateTokenRequest> validateTokenClient,
-        IRequestClient<MicroserviceCreateLogRequest> createLogClient)
+        IControllerErrorLogService controllerErrorLogService)
     {
         _deliveryService = deliveryService;
         _usersService = usersService;
-        _rolesService = rolesService;
         _validateTokenClient = validateTokenClient;
-        _createLogClient = createLogClient;
+        _controllerErrorLogService = controllerErrorLogService;
+    }
+
+    private async Task<(bool CheckResult, User? User)> CheckAccessLvl(string token, int minAccessLvl,
+        CancellationToken cancellationToken)
+    {
+        var response = (await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
+            new MicroserviceValidateTokenRequest(token), cancellationToken)).Message;
+        if (!response.IsValid)
+            return (false, null);
+        if (response.UserDto is null)
+            throw new Exception("If token is valid, the user cannot be empty");
+
+        var user = await _usersService.GetUserAsync(response.UserDto.UserId, cancellationToken);
+
+        return (user.Role.AccessLvl <= minAccessLvl, user);
     }
 
     [Authorize]
@@ -42,66 +56,21 @@ public class DeliveryController : ControllerBase
             HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
             var authToken = authHeader.ToString().Replace("Bearer ", "");
 
-            var response = await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
-                new MicroserviceValidateTokenRequest(authToken), cancellationToken);
+            var (checkResult, user) = await CheckAccessLvl(
+                authToken, (int)AccessLvlEnumerator.FiredEmployee - 1, cancellationToken);
+            if (!checkResult)
+                throw new Exception("The user does not have sufficient access rights");
 
-            if (response.Message.IsValid)
-            {
-                var role = await _rolesService.GetRoleAsync(response.Message.User!.RoleId, cancellationToken);
-                if (role.AccessLvl >= (int)AccessLvlEnumerator.FiredEmployee)
-                    throw new Exception("The user does not have sufficient access rights");
-            }
-            else
-            {
-                return Unauthorized(new BaseResponse<DeliverOrderResponse>(
-                    new DeliverOrderResponse("Invalid token"),
-                    null
-                ));
-            }
-
-            var user = await _usersService.GetUserAsync(response.Message.User.UserId, cancellationToken);
-
-            await _deliveryService.DeliverOrderBackAsync(user, deliverOrderRequest.DeliveryCode,
+            await _deliveryService.DeliverOrderAsync(user!, deliverOrderRequest.DeliveryCode,
                 deliverOrderRequest.PostomatId, cancellationToken);
 
-            return Ok(new BaseResponse<DeliverOrderResponse>
-            (
-                new DeliverOrderResponse("Order delivered back successfully"),
-                null
-            ));
+            return Ok(new BaseResponse<DeliverOrderResponse>(
+                new DeliverOrderResponse("Order delivered back successfully"), null));
         }
         catch (Exception e)
         {
-            try
-            {
-                var (log, error) = Log.Create(
-                    Guid.NewGuid(),
-                    DateTime.Now.ToUniversalTime(),
-                    "Delivery controller",
-                    "Error",
-                    "Error while delivering order",
-                    e.Message);
-                if (error is not null)
-                    throw new Exception($"Unable to create error log: {error}");
-
-                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
-                    new MicroserviceCreateLogRequest(log)
-                );
-                if (response.Message.ErrorMessage is not null)
-                    throw new Exception($"Unable to create error log (microservice error): {error}");
-
-                return Ok(new BaseResponse<DeliverOrderResponse>(
-                    null,
-                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
-                ));
-            }
-            catch (Exception ex)
-            {
-                return Ok(new BaseResponse<DeliverOrderResponse>(
-                    null,
-                    e.Message + $" Error log was not created: \"{ex.Message}\""
-                ));
-            }
+            return Ok(await _controllerErrorLogService.CreateErrorLog<DeliverOrderResponse>(
+                "Delivery controller", "Error while delivering order", e.Message));
         }
     }
 
@@ -115,66 +84,21 @@ public class DeliveryController : ControllerBase
             HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
             var authToken = authHeader.ToString().Replace("Bearer ", "");
 
-            var response = await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
-                new MicroserviceValidateTokenRequest(authToken), cancellationToken);
+            var (checkResult, user) = await CheckAccessLvl(
+                authToken, (int)AccessLvlEnumerator.FiredEmployee - 1, cancellationToken);
+            if (!checkResult)
+                throw new Exception("The user does not have sufficient access rights");
 
-            if (response.Message.IsValid)
-            {
-                var role = await _rolesService.GetRoleAsync(response.Message.User!.RoleId, cancellationToken);
-                if (role.AccessLvl >= (int)AccessLvlEnumerator.FiredEmployee)
-                    throw new Exception("The user does not have sufficient access rights");
-            }
-            else
-            {
-                return Unauthorized(new BaseResponse<DeliverOrderBackResponse>(
-                    new DeliverOrderBackResponse("Invalid token"),
-                    null
-                ));
-            }
-
-            var user = await _usersService.GetUserAsync(response.Message.User.UserId, cancellationToken);
-
-            await _deliveryService.DeliverOrderBackAsync(user, deliverOrderBackRequest.DeliveryCode,
+            await _deliveryService.DeliverOrderBackAsync(user!, deliverOrderBackRequest.DeliveryCode,
                 deliverOrderBackRequest.PostomatId, cancellationToken);
 
-            return Ok(new BaseResponse<DeliverOrderBackResponse>
-            (
-                new DeliverOrderBackResponse("Order delivered successfully"),
-                null
-            ));
+            return Ok(new BaseResponse<DeliverOrderBackResponse>(
+                new DeliverOrderBackResponse("Order delivered successfully"), null));
         }
         catch (Exception e)
         {
-            try
-            {
-                var (log, error) = Log.Create(
-                    Guid.NewGuid(),
-                    DateTime.Now.ToUniversalTime(),
-                    "Delivery controller",
-                    "Error",
-                    "Error while delivering order back",
-                    e.Message);
-                if (error is not null)
-                    throw new Exception($"Unable to create error log: {error}");
-
-                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
-                    new MicroserviceCreateLogRequest(log)
-                );
-                if (response.Message.ErrorMessage is not null)
-                    throw new Exception($"Unable to create error log (microservice error): {error}");
-
-                return Ok(new BaseResponse<DeliverOrderBackResponse>(
-                    null,
-                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
-                ));
-            }
-            catch (Exception ex)
-            {
-                return Ok(new BaseResponse<DeliverOrderBackResponse>(
-                    null,
-                    e.Message + $" Error log was not created: \"{ex.Message}\""
-                ));
-            }
+            return Ok(await _controllerErrorLogService.CreateErrorLog<DeliverOrderBackResponse>(
+                "Delivery controller", "Error while delivering order back", e.Message));
         }
     }
 }

@@ -1,11 +1,8 @@
-﻿using MassTransit;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Postomat.API.Contracts.Requests;
 using Postomat.API.Contracts.Responses;
 using Postomat.Core.Abstractions.Services;
-using Postomat.Core.MessageBrokerContracts.Requests;
-using Postomat.Core.MessageBrokerContracts.Responses;
-using Postomat.Core.Models;
+using Postomat.Core.Contracrs;
 
 namespace Postomat.API.Controllers;
 
@@ -14,13 +11,13 @@ namespace Postomat.API.Controllers;
 public class CustomerController : ControllerBase
 {
     private readonly ICustomerService _customerService;
-    private readonly IRequestClient<MicroserviceCreateLogRequest> _createLogClient;
+    private readonly IControllerErrorLogService _controllerErrorLogService;
 
     public CustomerController(ICustomerService customerService,
-        IRequestClient<MicroserviceCreateLogRequest> createLogClient)
+        IControllerErrorLogService controllerErrorLogService)
     {
         _customerService = customerService;
-        _createLogClient = createLogClient;
+        _controllerErrorLogService = controllerErrorLogService;
     }
 
     [HttpGet]
@@ -32,44 +29,14 @@ public class CustomerController : ControllerBase
             await _customerService.ReceiveOrderAsync(receiveOrderRequest.ReceivingCode,
                 receiveOrderRequest.PostomatId, cancellationToken);
 
-            return Ok(new BaseResponse<ReceiveOrderResponse>
-            (
+            return Ok(new BaseResponse<ReceiveOrderResponse>(
                 new ReceiveOrderResponse("Order received successfully"),
-                null
-            ));
+                null));
         }
         catch (Exception e)
         {
-            try
-            {
-                var (log, error) = Log.Create(
-                    Guid.NewGuid(),
-                    DateTime.Now.ToUniversalTime(),
-                    "Customer controller",
-                    "Error",
-                    "Error while receiving order",
-                    e.Message);
-                if (error is not null)
-                    throw new Exception($"Unable to create error log: {error}");
-
-                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
-                    new MicroserviceCreateLogRequest(log)
-                );
-                if (response.Message.ErrorMessage is not null)
-                    throw new Exception($"Unable to create error log (microservice error): {error}");
-
-                return Ok(new BaseResponse<ReceiveOrderResponse>(
-                    null,
-                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
-                ));
-            }
-            catch (Exception ex)
-            {
-                return Ok(new BaseResponse<ReceiveOrderResponse>(
-                    null,
-                    e.Message + $" Error log was not created: \"{ex.Message}\""
-                ));
-            }
+            return Ok(await _controllerErrorLogService.CreateErrorLog<ReceiveOrderResponse>(
+                "Customer controller", "Error while receiving order", e.Message));
         }
     }
 }

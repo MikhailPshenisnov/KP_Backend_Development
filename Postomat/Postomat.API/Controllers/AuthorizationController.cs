@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Postomat.API.Contracts.Requests;
 using Postomat.API.Contracts.Responses;
+using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Contracrs;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
 using Postomat.Core.Models;
+using Postomat.Core.Models.Other;
 
 namespace Postomat.API.Controllers;
 
@@ -15,33 +18,51 @@ public class AuthorizationController : ControllerBase
 {
     private readonly IRequestClient<MicroserviceLoginUserRequest> _loginUserClient;
     private readonly IRequestClient<MicroserviceValidateTokenRequest> _validateTokenClient;
-    private readonly IRequestClient<MicroserviceCreateLogRequest> _createLogClient;
+    private readonly IControllerErrorLogService _controllerErrorLogService;
+    private readonly IUsersService _usersService;
 
     public AuthorizationController(IRequestClient<MicroserviceLoginUserRequest> loginUserClient,
         IRequestClient<MicroserviceValidateTokenRequest> validateTokenClient,
-        IRequestClient<MicroserviceCreateLogRequest> createLogClient)
+        IControllerErrorLogService controllerErrorLogService,
+        IUsersService usersService)
     {
         _loginUserClient = loginUserClient;
         _validateTokenClient = validateTokenClient;
-        _createLogClient = createLogClient;
+        _controllerErrorLogService = controllerErrorLogService;
+        _usersService = usersService;
+    }
+
+    private async Task<(bool CheckResult, User? User)> CheckAccessLvl(string token, int minAccessLvl,
+        CancellationToken cancellationToken)
+    {
+        var response = (await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
+            new MicroserviceValidateTokenRequest(token), cancellationToken)).Message;
+        if (!response.IsValid)
+            return (false, null);
+        if (response.UserDto is null)
+            throw new Exception("If token is valid, the user cannot be empty");
+
+        var user = await _usersService.GetUserAsync(response.UserDto.UserId, cancellationToken);
+
+        return (user.Role.AccessLvl <= minAccessLvl, user);
     }
 
     [HttpPost]
-    public async Task<IActionResult> LoginUser([FromBody] LoginUserRequest loginUserRequest)
+    public async Task<IActionResult> LoginUser([FromBody] LoginUserRequest loginUserRequest,
+        CancellationToken cancellationToken)
     {
         try
         {
             var response = await _loginUserClient.GetResponse<MicroserviceLoginUserResponse>(
                 new MicroserviceLoginUserRequest(
                     loginUserRequest.Login,
-                    loginUserRequest.Password
-                ));
+                    loginUserRequest.Password),
+                cancellationToken);
 
             if (!response.Message.IsSuccess)
                 return Unauthorized(new BaseResponse<LoginUserResponse>(
                     null,
-                    response.Message.ErrorMessage ?? ""
-                ));
+                    response.Message.ErrorMessage ?? ""));
 
             if (response.Message.Token is null)
                 throw new Exception("If login is successful, the token cannot be empty.");
@@ -55,47 +76,17 @@ public class AuthorizationController : ControllerBase
 
             return Ok(new BaseResponse<LoginUserResponse>(
                 new LoginUserResponse("Successful", response.Message.Token),
-                null
-            ));
+                null));
         }
         catch (Exception e)
         {
-            try
-            {
-                var (log, error) = Log.Create(
-                    Guid.NewGuid(),
-                    DateTime.Now.ToUniversalTime(),
-                    "Authorization controller",
-                    "Error",
-                    "Error while login process",
-                    e.Message);
-                if (error is not null)
-                    throw new Exception($"Unable to create error log: {error}");
-                
-                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
-                    new MicroserviceCreateLogRequest(log)
-                );
-                if (response.Message.ErrorMessage is not null)
-                    throw new Exception($"Unable to create error log (microservice error): {error}");
-                
-                return Ok(new BaseResponse<LoginUserResponse>(
-                    null,
-                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
-                ));
-                
-            }
-            catch (Exception ex)
-            {
-                return Ok(new BaseResponse<LoginUserResponse>(
-                    null,
-                    e.Message + $" Error log was not created: \"{ex.Message}\""
-                ));
-            }
+            return Ok(await _controllerErrorLogService.CreateErrorLog<LoginUserResponse>(
+                "Authorization controller", "Error while login process", e.Message));
         }
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCurrentUserToken()
+    public async Task<IActionResult> GetCurrentUserToken(CancellationToken cancellationToken)
     {
         try
         {
@@ -103,107 +94,48 @@ public class AuthorizationController : ControllerBase
 
             return Ok(new BaseResponse<GetCurrentUserTokenResponse>(
                 new GetCurrentUserTokenResponse(jwtToken ?? ""),
-                null
-            ));
+                null));
         }
         catch (Exception e)
         {
-            try
-            {
-                var (log, error) = Log.Create(
-                    Guid.NewGuid(),
-                    DateTime.Now.ToUniversalTime(),
-                    "Authorization controller",
-                    "Error",
-                    "Error while getting current user token",
-                    e.Message);
-                if (error is not null)
-                    throw new Exception($"Unable to create error log: {error}");
-                
-                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
-                    new MicroserviceCreateLogRequest(log)
-                );
-                if (response.Message.ErrorMessage is not null)
-                    throw new Exception($"Unable to create error log (microservice error): {error}");
-                
-                return Ok(new BaseResponse<GetCurrentUserTokenResponse>(
-                    null,
-                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
-                ));
-                
-            }
-            catch (Exception ex)
-            {
-                return Ok(new BaseResponse<GetCurrentUserTokenResponse>(
-                    null,
-                    e.Message + $" Error log was not created: \"{ex.Message}\""
-                ));
-            }
+            return Ok(await _controllerErrorLogService.CreateErrorLog<GetCurrentUserTokenResponse>(
+                "Authorization controller", "Error while getting current user token", e.Message));
         }
     }
 
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> ValidateToken([FromBody] ValidateTokenRequest validateTokenRequest)
+    public async Task<IActionResult> ValidateToken([FromBody] ValidateTokenRequest validateTokenRequest,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var response = await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
-                new MicroserviceValidateTokenRequest(validateTokenRequest.Token)
-            );
+            HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
+            var authToken = authHeader.ToString().Replace("Bearer ", "");
 
-            if (!response.Message.IsValid)
-                return Unauthorized(new BaseResponse<ValidateTokenResponse>(
-                    null,
-                    response.Message.ErrorMessage ?? ""
-                ));
+            var (checkResult, user) = await CheckAccessLvl(
+                authToken, (int)AccessLvlEnumerator.DeliveryMan - 1, cancellationToken);
+            if (!checkResult)
+                throw new Exception("The user does not have sufficient access rights");
 
-            if (response.Message.User is null)
-            {
+            var response = (await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
+                new MicroserviceValidateTokenRequest(validateTokenRequest.Token), cancellationToken)).Message;
+            if (!response.IsValid)
+                return Ok(new BaseResponse<ValidateTokenResponse>(null, response.ErrorMessage ?? ""));
+            if (response.UserDto is null)
                 throw new Exception("If token is valid, the user cannot be empty.");
-            }
 
             return Ok(new BaseResponse<ValidateTokenResponse>(
                 new ValidateTokenResponse(
                     "Token is valid",
-                    response.Message.User.UserId,
-                    response.Message.User.RoleId),
-                null
-            ));
+                    response.UserDto.UserId,
+                    response.UserDto.RoleId),
+                null));
         }
         catch (Exception e)
         {
-            try
-            {
-                var (log, error) = Log.Create(
-                    Guid.NewGuid(),
-                    DateTime.Now.ToUniversalTime(),
-                    "Authorization controller",
-                    "Error",
-                    "Error while validating token",
-                    e.Message);
-                if (error is not null)
-                    throw new Exception($"Unable to create error log: {error}");
-                
-                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
-                    new MicroserviceCreateLogRequest(log)
-                );
-                if (response.Message.ErrorMessage is not null)
-                    throw new Exception($"Unable to create error log (microservice error): {error}");
-                
-                return Ok(new BaseResponse<ValidateTokenResponse>(
-                    null,
-                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
-                ));
-                
-            }
-            catch (Exception ex)
-            {
-                return Ok(new BaseResponse<ValidateTokenResponse>(
-                    null,
-                    e.Message + $" Error log was not created: \"{ex.Message}\""
-                ));
-            }
+            return Ok(await _controllerErrorLogService.CreateErrorLog<ValidateTokenResponse>(
+                "Authorization controller", "Error while validating token", e.Message));
         }
     }
 
@@ -219,45 +151,14 @@ public class AuthorizationController : ControllerBase
                 SameSite = SameSiteMode.Strict
             });
 
-            return Ok(new BaseResponse<LogoutUserResponse>
-            (
+            return Ok(new BaseResponse<LogoutUserResponse>(
                 new LogoutUserResponse("Successful"),
-                null
-            ));
+                null));
         }
         catch (Exception e)
         {
-            try
-            {
-                var (log, error) = Log.Create(
-                    Guid.NewGuid(),
-                    DateTime.Now.ToUniversalTime(),
-                    "Authorization controller",
-                    "Error",
-                    "Error while logout user",
-                    e.Message);
-                if (error is not null)
-                    throw new Exception($"Unable to create error log: {error}");
-                
-                var response = await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
-                    new MicroserviceCreateLogRequest(log)
-                );
-                if (response.Message.ErrorMessage is not null)
-                    throw new Exception($"Unable to create error log (microservice error): {error}");
-                
-                return Ok(new BaseResponse<LogoutUserResponse>(
-                    null,
-                    e.Message + $" Error log was created: \"{response.Message.CreatedLogId}\""
-                ));
-                
-            }
-            catch (Exception ex)
-            {
-                return Ok(new BaseResponse<LogoutUserResponse>(
-                    null,
-                    e.Message + $" Error log was not created: \"{ex.Message}\""
-                ));
-            }
+            return Ok(await _controllerErrorLogService.CreateErrorLog<LogoutUserResponse>(
+                "Authorization controller", "Error while logout user", e.Message));
         }
     }
 }

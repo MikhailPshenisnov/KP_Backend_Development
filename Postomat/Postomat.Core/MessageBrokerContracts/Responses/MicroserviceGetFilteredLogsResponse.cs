@@ -1,8 +1,6 @@
-﻿using Postomat.Core.Models;
-
-namespace Postomat.Core.MessageBrokerContracts.Responses;
+﻿namespace Postomat.Core.MessageBrokerContracts.Responses;
 
 public record MicroserviceGetFilteredLogsResponse(
-    List<Log>? Logs,
+    List<LogDto>? LogDtoList,
     string? ErrorMessage
 );

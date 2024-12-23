@@ -1,7 +1,5 @@
-﻿using Postomat.Core.Models;
-
-namespace Postomat.Core.MessageBrokerContracts.Requests;
+﻿namespace Postomat.Core.MessageBrokerContracts.Requests;
 
 public record MicroserviceCreateLogRequest(
-    Log Log
+    LogDto LogDto
 );

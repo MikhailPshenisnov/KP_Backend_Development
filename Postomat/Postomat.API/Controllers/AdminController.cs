@@ -6,6 +6,7 @@ using Postomat.API.Contracts.Responses;
 using Postomat.Core.Abstractions.Services;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
+using Postomat.Core.Models;
 using Postomat.Core.Models.Other;
 
 namespace Postomat.API.Controllers;
@@ -24,6 +25,7 @@ public class AdminController : ControllerBase
     private readonly IRequestClient<MicroserviceGetFilteredLogsRequest> _getFilteredLogsClient;
     private readonly IRequestClient<MicroserviceUpdateLogRequest> _updateLogClient;
     private readonly IRequestClient<MicroserviceDeleteLogRequest> _deleteLogClient;
+    private readonly IControllerErrorLogService _controllerErrorLogService;
 
     public AdminController(IOrderPlansService orderPlansService, IOrdersService ordersService,
         IPostomatsService postomatsService, IRolesService rolesService, IUsersService usersService,
@@ -31,7 +33,8 @@ public class AdminController : ControllerBase
         IRequestClient<MicroserviceCreateLogRequest> createLogClient,
         IRequestClient<MicroserviceGetFilteredLogsRequest> getFilteredLogsClient,
         IRequestClient<MicroserviceUpdateLogRequest> updateLogClient,
-        IRequestClient<MicroserviceDeleteLogRequest> deleteLogClient)
+        IRequestClient<MicroserviceDeleteLogRequest> deleteLogClient,
+        IControllerErrorLogService controllerErrorLogService)
     {
         _orderPlansService = orderPlansService;
         _ordersService = ordersService;
@@ -43,15 +46,52 @@ public class AdminController : ControllerBase
         _getFilteredLogsClient = getFilteredLogsClient;
         _updateLogClient = updateLogClient;
         _deleteLogClient = deleteLogClient;
+        _controllerErrorLogService = controllerErrorLogService;
     }
 
-    private async Task<bool> CheckAcceessLvl(string token, int minAccessLvl, CancellationToken cancellationToken)
+    // private async Task<BaseResponse<T>> CreateErrorLog<T>(string origin, string title, string message)
+    // {
+    //     try
+    //     {
+    //         var (log, error) = Log.Create(Guid.NewGuid(), DateTime.Now.ToUniversalTime(), origin, "Error",
+    //             title, message);
+    //
+    //         if (!error.IsNullOrEmpty())
+    //             throw new Exception($"Unable to create error log: {error}");
+    //
+    //         var response = (await _createLogClient.GetResponse<MicroserviceCreateLogResponse>(
+    //             new MicroserviceCreateLogRequest(new LogDto(log.Id, log.Date, log.Origin, log.Type, log.Title,
+    //                 log.Message)))).Message;
+    //
+    //         if (response.ErrorMessage is not null)
+    //             throw new Exception($"Unable to create error log (microservice error): {error}");
+    //
+    //         return new BaseResponse<T>(
+    //             null,
+    //             message + $" Error log was created: \"{response.CreatedLogId}\"");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         return new BaseResponse<T>(
+    //             null,
+    //             message + $" Error log was not created: \"{ex.Message}\""
+    //         );
+    //     }
+    // }
+
+    private async Task<(bool CheckResult, User? User)> CheckAccessLvl(string token, int minAccessLvl,
+        CancellationToken cancellationToken)
     {
-        var response = await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
-            new MicroserviceValidateTokenRequest(token), cancellationToken);
-        if (!response.Message.IsValid) return false;
-        var role = await _rolesService.GetRoleAsync(response.Message.User!.RoleId, cancellationToken);
-        return role.AccessLvl <= minAccessLvl;
+        var response = (await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
+            new MicroserviceValidateTokenRequest(token), cancellationToken)).Message;
+        if (!response.IsValid)
+            return (false, null);
+        if (response.UserDto is null)
+            throw new Exception("If token is valid, the user cannot be empty");
+
+        var user = await _usersService.GetUserAsync(response.UserDto.UserId, cancellationToken);
+
+        return (user.Role.AccessLvl <= minAccessLvl, user);
     }
 
     [Authorize]
@@ -64,20 +104,22 @@ public class AdminController : ControllerBase
             HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
             var authToken = authHeader.ToString().Replace("Bearer ", "");
 
-            if (!await CheckAcceessLvl(authToken, (int)AccessLvlEnumerator.DeliveryMan - 1,
-                    cancellationToken))
+            var (checkResult, user) = await CheckAccessLvl(
+                authToken, (int)AccessLvlEnumerator.DeliveryMan - 1, cancellationToken);
+            if (!checkResult)
                 throw new Exception("The user does not have sufficient access rights");
 
             return Redirect("/Customer/ReceiveOrder");
         }
         catch (Exception e)
         {
-            /* TODO */
-            return Ok(new BaseResponse<ReceiveOrderResponse>
-            (
-                null,
-                e.Message
-            ));
+            return Ok(await _controllerErrorLogService.CreateErrorLog<ReceiveOrderResponse>(
+                "Admin controller", "Error while receiving order", e.Message));
+            // return Ok(new BaseResponse<ReceiveOrderResponse>
+            // (
+            //     null,
+            //     e.Message
+            // ));
         }
     }
 
@@ -91,20 +133,22 @@ public class AdminController : ControllerBase
             HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
             var authToken = authHeader.ToString().Replace("Bearer ", "");
 
-            if (!await CheckAcceessLvl(authToken, (int)AccessLvlEnumerator.DeliveryMan - 1,
-                    cancellationToken))
+            var (checkResult, user) = await CheckAccessLvl(
+                authToken, (int)AccessLvlEnumerator.DeliveryMan - 1, cancellationToken);
+            if (!checkResult)
                 throw new Exception("The user does not have sufficient access rights");
 
             return Redirect("/Delivery/DeliverOrder");
         }
         catch (Exception e)
         {
-            /* TODO */
-            return Ok(new BaseResponse<DeliverOrderResponse>
-            (
-                null,
-                e.Message
-            ));
+            return Ok(await _controllerErrorLogService.CreateErrorLog<DeliverOrderResponse>(
+                "Admin controller", "Error while delivering order", e.Message));
+            // return Ok(new BaseResponse<DeliverOrderResponse>
+            // (
+            //     null,
+            //     e.Message
+            // ));
         }
     }
 
@@ -118,20 +162,22 @@ public class AdminController : ControllerBase
             HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
             var authToken = authHeader.ToString().Replace("Bearer ", "");
 
-            if (!await CheckAcceessLvl(authToken, (int)AccessLvlEnumerator.DeliveryMan - 1,
-                    cancellationToken))
+            var (checkResult, user) = await CheckAccessLvl(
+                authToken, (int)AccessLvlEnumerator.DeliveryMan - 1, cancellationToken);
+            if (!checkResult)
                 throw new Exception("The user does not have sufficient access rights");
 
             return Redirect("/Delivery/DeliverOrderBack");
         }
         catch (Exception e)
         {
-            /* TODO */
-            return Ok(new BaseResponse<DeliverOrderBackResponse>
-            (
-                null,
-                e.Message
-            ));
+            return Ok(await _controllerErrorLogService.CreateErrorLog<DeliverOrderBackResponse>(
+                "Admin controller", "Error while delivering order back", e.Message));
+            // return Ok(new BaseResponse<DeliverOrderBackResponse>
+            // (
+            //     null,
+            //     e.Message
+            // ));
         }
     }
 }

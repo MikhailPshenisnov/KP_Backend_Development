@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.MessageBrokerContracts;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
 
@@ -23,7 +24,7 @@ public class GetLogConsumer : IConsumer<MicroserviceGetLogRequest>
             var log = await _logsService.GetLogAsync(request.LogId, new CancellationToken());
 
             await context.RespondAsync(new MicroserviceGetLogResponse(
-                log,
+                new LogDto(log.Id, log.Date, log.Origin, log.Type, log.Title, log.Message),
                 null));
         }
         catch (Exception e)

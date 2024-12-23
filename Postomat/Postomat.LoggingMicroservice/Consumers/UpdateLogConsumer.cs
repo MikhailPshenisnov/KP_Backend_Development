@@ -1,7 +1,9 @@
 ﻿using MassTransit;
+using Microsoft.IdentityModel.Tokens;
 using Postomat.Core.Abstractions.Services;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
+using Postomat.Core.Models;
 
 namespace Postomat.LoggingMicroservice.Consumers;
 
@@ -19,7 +21,14 @@ public class UpdateLogConsumer : IConsumer<MicroserviceUpdateLogRequest>
         try
         {
             var request = context.Message;
-            var updatedLogId = await _logsService.UpdateLogAsync(request.LogId, request.NewLog,
+
+            var (newLog, error) = Log.Create(request.NewLogDto.Id, request.NewLogDto.Date,
+                request.NewLogDto.Origin, request.NewLogDto.Type, request.NewLogDto.Title, request.NewLogDto.Message);
+
+            if (!error.IsNullOrEmpty())
+                throw new Exception("Unable to convert log dto to log model");
+
+            var updatedLogId = await _logsService.UpdateLogAsync(request.LogId, newLog,
                 new CancellationToken());
 
             await context.RespondAsync(new MicroserviceUpdateLogResponse(

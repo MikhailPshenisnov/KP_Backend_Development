@@ -1,4 +1,6 @@
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Postomat.Application.Services;
 using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
@@ -11,6 +13,36 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Authentication
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = false,
+            SignatureValidator = (token, parameters) =>
+                new Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler().ReadJsonWebToken(token)
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                context.Token = token;
+                return Task.CompletedTask;
+            }
+        };
+    });
 
 // Authorization
 builder.Services.AddAuthorization();
@@ -25,6 +57,7 @@ builder.Services.AddTransient<IOrdersService, OrdersService>();
 builder.Services.AddTransient<IPostomatsService, PostomatsService>();
 builder.Services.AddTransient<IRolesService, RolesService>();
 builder.Services.AddTransient<IUsersService, UsersService>();
+builder.Services.AddTransient<IControllerErrorLogService, ControllerErrorLogService>();
 
 // Services for repositories
 builder.Services.AddTransient<ICellsRepository, CellsRepository>();
@@ -77,8 +110,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Authentication
+app.UseAuthentication();
+
+// Authorization
 app.UseAuthorization();
+
+app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
