@@ -1,6 +1,7 @@
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Postomat.API.Middlewares;
 using Postomat.Application.Services;
 using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
@@ -37,8 +38,7 @@ builder.Services
         {
             OnMessageReceived = context =>
             {
-                var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-                context.Token = token;
+                context.Token = context.Request.Headers.Authorization.FirstOrDefault()?.Split(" ").Last();
                 return Task.CompletedTask;
             }
         };
@@ -57,7 +57,6 @@ builder.Services.AddTransient<IOrdersService, OrdersService>();
 builder.Services.AddTransient<IPostomatsService, PostomatsService>();
 builder.Services.AddTransient<IRolesService, RolesService>();
 builder.Services.AddTransient<IUsersService, UsersService>();
-builder.Services.AddTransient<IControllerErrorLogService, ControllerErrorLogService>();
 
 // Services for repositories
 builder.Services.AddTransient<ICellsRepository, CellsRepository>();
@@ -77,8 +76,7 @@ builder.Services.AddCors(options => options.AddPolicy(
         .WithOrigins("https://localhost:5173") // frontend address
         .AllowAnyHeader()
         .AllowAnyMethod()
-        .AllowCredentials())
-);
+        .AllowCredentials()));
 
 // Message broker
 builder.Services.AddMassTransit(x =>
@@ -92,16 +90,19 @@ builder.Services.AddMassTransit(x =>
         });
     });
 
-    x.AddRequestClient<MicroserviceLoginUserRequest>();
-    x.AddRequestClient<MicroserviceValidateTokenRequest>();
     x.AddRequestClient<MicroserviceCreateLogRequest>();
-    x.AddRequestClient<MicroserviceGetLogRequest>();
-    x.AddRequestClient<MicroserviceGetFilteredLogsRequest>();
-    x.AddRequestClient<MicroserviceUpdateLogRequest>();
     x.AddRequestClient<MicroserviceDeleteLogRequest>();
+    x.AddRequestClient<MicroserviceGetFilteredLogsRequest>();
+    x.AddRequestClient<MicroserviceGetLogRequest>();
+    x.AddRequestClient<MicroserviceLoginUserRequest>();
+    x.AddRequestClient<MicroserviceUpdateLogRequest>();
+    x.AddRequestClient<MicroserviceValidateTokenRequest>();
 });
 
 var app = builder.Build();
+
+// Error handling middleware
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 // Swagger
 if (app.Environment.IsDevelopment())

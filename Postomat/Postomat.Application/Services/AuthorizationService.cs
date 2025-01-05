@@ -25,15 +25,12 @@ public class AuthorizationService : IAuthorizationService
             if (user == null)
                 throw new Exception("Invalid login or password");
 
-            if (login == user.Login &&
-                BCrypt.Net.BCrypt.EnhancedVerify(password, user.PasswordHash))
-            {
-                var token = GenerateJwtToken(user.Id, user.Role.Id);
+            if (login != user.Login || !BCrypt.Net.BCrypt.EnhancedVerify(password, user.PasswordHash))
+                throw new Exception("Invalid login or password");
+            
+            var token = GenerateJwtToken(user.Id, user.Role.Id);
+            return token;
 
-                return token;
-            }
-
-            throw new Exception("Invalid login or password");
         }
         catch (Exception e)
         {
@@ -58,7 +55,7 @@ public class AuthorizationService : IAuthorizationService
         }
     }
 
-    private string GenerateJwtToken(Guid userId, Guid roleId)
+    private static string GenerateJwtToken(Guid userId, Guid roleId)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes("very_strong_and_super_super_secret_key_123!"); /* TODO */
@@ -78,7 +75,7 @@ public class AuthorizationService : IAuthorizationService
         return tokenHandler.WriteToken(token);
     }
 
-    private ClaimsPrincipal ValidateJwtToken(string token)
+    private static ClaimsPrincipal ValidateJwtToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes("very_strong_and_super_super_secret_key_123!"); /* TODO */

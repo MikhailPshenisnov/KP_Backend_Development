@@ -1,6 +1,6 @@
 ﻿namespace Postomat.Core.Contracrs;
 
 public record BaseResponse<T>(
-    object? Data,
+    T? Data,
     string? ErrorMessage
 );
