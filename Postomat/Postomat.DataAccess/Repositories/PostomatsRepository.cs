@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions.Repositories;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.DataAccess.Database.Context;
 
 namespace Postomat.DataAccess.Repositories;
@@ -18,7 +20,7 @@ public class PostomatsRepository : IPostomatsRepository
     public async Task<Guid> CreatePostomat(Core.Models.Postomat postomat)
     {
         if (postomat.Cells.Count != 0)
-            throw new Exception("You cannot create a postomat with cells, only separately");
+            throw new DestructiveActionException("You cannot create a postomat with cells, only separately.");
 
         var postomatEntity = new Database.Entities.Postomat
         {
@@ -46,17 +48,22 @@ public class PostomatsRepository : IPostomatsRepository
             {
                 var postomatCells = await _cellsRepository.GetPostomatCells(postomatEntity.Id);
 
-                postomats.Add(Core.Models.Postomat
+                var (postomatModel, postomatError) = Core.Models.Postomat
                     .Create(
                         postomatEntity.Id,
                         postomatEntity.Name,
                         postomatEntity.Address,
-                        postomatCells)
-                    .Postomat);
+                        postomatCells);
+                if (!string.IsNullOrEmpty(postomatError))
+                    throw new ConversionException($"Unable to convert postomat entity to postomat model. " +
+                                                  $"--> {postomatError}");
+
+                postomats.Add(postomatModel);
             }
-            catch (Exception e)
+            catch (RepositoryException e)
             {
-                throw new Exception($"An error occurred when getting the postomats: {e.Message}");
+                throw new RepositoryException($"An error occurred when getting the postomats. " +
+                                              $"--> {e.Message}");
             }
         }
 
@@ -69,11 +76,11 @@ public class PostomatsRepository : IPostomatsRepository
             .FirstOrDefault(p => p.Id == postomatId);
 
         if (oldPostomat is null)
-            throw new Exception($"Unknown postomat id: \"{postomatId}\"");
+            throw new UnknownIdentifierException($"Unknown postomat id: \"{postomatId}\".");
 
         if (oldPostomat.Cells != newPostomat.Cells)
-            throw new Exception("You cannot change postomat cells from postomat" +
-                                "repository, use cells repository for that");
+            throw new DestructiveActionException("You cannot change postomat cells from postomat" +
+                                                 "repository, use cells repository for that.");
 
         await _context.Postomats
             .Where(p => p.Id == postomatId)
@@ -89,16 +96,16 @@ public class PostomatsRepository : IPostomatsRepository
         var postomat = (await GetAllPostomats())
             .FirstOrDefault(p => p.Id == postomatId);
         if (postomat is null)
-            throw new Exception($"Unknown postomat id: \"{postomatId}\"");
+            throw new UnknownIdentifierException($"Unknown postomat id: \"{postomatId}\".");
         if (postomat.Cells.Count != 0)
-            throw new Exception($"Deleting a postomat \"{postomatId}\" is destructive, " +
-                                $"it contains cells, delete them first");
+            throw new DestructiveActionException($"Deleting a postomat \"{postomatId}\" is destructive, " +
+                                                 $"it contains cells, delete them first.");
 
         var orderPlanWithPostomat = await _context.OrderPlans
             .FirstOrDefaultAsync(op => op.PostomatId == postomatId);
         if (orderPlanWithPostomat is not null)
-            throw new Exception($"Deleting a postomat \"{postomatId}\" is destructive, " +
-                                $"it is contained in an order plan \"{orderPlanWithPostomat.Id}\"");
+            throw new DestructiveActionException($"Deleting a postomat \"{postomatId}\" is destructive, " +
+                                                 $"it is contained in an order plan \"{orderPlanWithPostomat.Id}\".");
 
         await _context.Postomats
             .Where(p => p.Id == postomatId)

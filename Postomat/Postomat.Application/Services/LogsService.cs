@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Filters;
 
@@ -23,7 +25,8 @@ public class LogsService : ILogsService
         {
             var createdLogId = await _logsRepository.CreateLog(log);
 
-            if (log.Type == "Error")
+            if (log.Type.Contains("exception", StringComparison.CurrentCultureIgnoreCase) ||
+                log.Type.Contains("error", StringComparison.CurrentCultureIgnoreCase))
                 _logger.LogError("{LogDate} ({LogType} log from {LogOrigin}) \"{LogTitle}\":\n{LogMessage}",
                     log.Date, log.Type, log.Origin, log.Title, log.Message);
             else
@@ -32,11 +35,12 @@ public class LogsService : ILogsService
 
             return createdLogId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
             _logger.LogError("Something went wrong during the log creation process, " +
                              "the log was not created: {Message}", e.Message);
-            throw new Exception($"Unable to create log \"{log.Id}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to create log \"{log.Id}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -48,13 +52,14 @@ public class LogsService : ILogsService
 
             var log = allLogs.FirstOrDefault(l => l.Id == logId);
             if (log == null)
-                throw new Exception($"Unknown log id: \"{logId}\"");
+                throw new UnknownIdentifierException($"Unknown log id: \"{logId}\".");
 
             return log;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get log \"{logId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to get log \"{logId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -84,37 +89,42 @@ public class LogsService : ILogsService
             if (logFilter.PartOfOrigin is not null)
             {
                 logs = logs
-                    .Where(l => l.Origin.ToLower().Contains(logFilter.PartOfOrigin.ToLower()))
+                    .Where(l => l.Origin
+                        .Contains(logFilter.PartOfOrigin, StringComparison.CurrentCultureIgnoreCase))
                     .ToList();
             }
 
             if (logFilter.PartOfType is not null)
             {
                 logs = logs
-                    .Where(l => l.Origin.ToLower().Contains(logFilter.PartOfType.ToLower()))
+                    .Where(l => l.Origin
+                        .Contains(logFilter.PartOfType, StringComparison.CurrentCultureIgnoreCase))
                     .ToList();
             }
 
             if (logFilter.PartOfTitle is not null)
             {
                 logs = logs
-                    .Where(l => l.Origin.ToLower().Contains(logFilter.PartOfTitle.ToLower()))
+                    .Where(l => l.Origin
+                        .Contains(logFilter.PartOfTitle, StringComparison.CurrentCultureIgnoreCase))
                     .ToList();
             }
 
             if (logFilter.PartOfMessage is not null)
             {
                 logs = logs
-                    .Where(l => l.Origin.ToLower().Contains(logFilter.PartOfMessage.ToLower()))
+                    .Where(l => l.Origin
+                        .Contains(logFilter.PartOfMessage, StringComparison.CurrentCultureIgnoreCase))
                     .ToList();
             }
 
             return logs.OrderBy(x => x.Date).ToList();
         }
 
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get filtered logs: \"{e.Message}\"");
+            throw new ServiceException($"Unable to get filtered logs. " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -126,9 +136,10 @@ public class LogsService : ILogsService
 
             return updatedLogId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to update log \"{logId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to update log \"{logId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -140,9 +151,10 @@ public class LogsService : ILogsService
 
             return existedLogId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to delete log \"{logId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to delete log \"{logId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Filters;
 
@@ -27,9 +29,10 @@ public class PostomatsService : IPostomatsService
 
             return createdPostomatId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to create postomat \"{postomat.Id}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to create postomat \"{postomat.Id}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -41,13 +44,14 @@ public class PostomatsService : IPostomatsService
 
             var postomat = allPostomats.FirstOrDefault(p => p.Id == postomatId);
             if (postomat == null)
-                throw new Exception($"Unknown postomat id: \"{postomatId}\"");
+                throw new UnknownIdentifierException($"Unknown postomat id: \"{postomatId}\".");
 
             return postomat;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get postomat \"{postomatId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to get postomat \"{postomatId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -78,9 +82,10 @@ public class PostomatsService : IPostomatsService
             return postomats.OrderBy(x => x.Name).ToList();
         }
 
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get filtered postomats: \"{e.Message}\"");
+            throw new ServiceException($"Unable to get filtered postomats. " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -92,9 +97,10 @@ public class PostomatsService : IPostomatsService
 
             return updatedPostomatId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to update postomat \"{postomatId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to update postomat \"{postomatId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -106,9 +112,10 @@ public class PostomatsService : IPostomatsService
 
             return existedPostomatId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to delete postomat \"{postomatId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to delete postomat \"{postomatId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -120,9 +127,10 @@ public class PostomatsService : IPostomatsService
 
             return createdCellId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to add cell \"{cell.Id}\" to postomat \"{cell.PostomatId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to add cell \"{cell.Id}\" to postomat \"{cell.PostomatId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -136,12 +144,12 @@ public class PostomatsService : IPostomatsService
                                (postomat.Cells.FirstOrDefault(c => c.CellSize == order.OrderSize + 1) ??
                                 postomat.Cells.FirstOrDefault(c => c.CellSize == order.OrderSize + 2));
             if (suitableCell is null)
-                throw new Exception($"No suitable cell in the postomat \"{postomatId}\"");
+                throw new DeliveringException($"No suitable cell in the postomat \"{postomatId}\".");
 
             var orderPlan = (await _orderPlansRepository.GetAllOrderPlans())
                 .FirstOrDefault(op => op.Order.Id == order.Id);
             if (orderPlan is null)
-                throw new Exception($"Order \"{order.Id}\" has no order plan");
+                throw new UnknownIdentifierException($"Order \"{order.Id}\" has no order plan.");
 
             var updatedOrderPlan = OrderPlan.Create(
                 orderPlan.Id,
@@ -155,7 +163,8 @@ public class PostomatsService : IPostomatsService
                 user,
                 orderPlan.DeliveredBackBy);
             if (updatedOrderPlan.Error is not null)
-                throw new Exception($"Unable to update order plan for order \"{order.Id}\": {updatedOrderPlan.Error}");
+                throw new ConversionException($"Unable to update order plan for order \"{order.Id}\". " +
+                                              $"--> {updatedOrderPlan.Error}");
 
             var updatedCell = Cell.Create(
                 suitableCell.Id,
@@ -163,7 +172,8 @@ public class PostomatsService : IPostomatsService
                 suitableCell.PostomatId,
                 order);
             if (updatedCell.Error is not null)
-                throw new Exception($"Unable to fill cell with order \"{order.Id}\": {updatedCell.Error}");
+                throw new ConversionException($"Unable to fill cell with order \"{order.Id}\". " +
+                                              $"--> {updatedCell.Error}");
 
             var updatedOrderPlanId = await _orderPlansRepository
                 .UpdateOrderPlan(orderPlan.Id, updatedOrderPlan.OrderPlan);
@@ -172,9 +182,10 @@ public class PostomatsService : IPostomatsService
 
             return (updatedCellId, updatedOrderPlanId);
         }
-        catch (Exception e)
+        catch (ExpectedException e) when (e is DeliveringException or ConversionException or RepositoryException)
         {
-            throw new Exception($"Unable to fill cell in postomat \"{postomatId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to fill cell in postomat \"{postomatId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -187,12 +198,12 @@ public class PostomatsService : IPostomatsService
             var postomat = await GetPostomatAsync(postomatId, ct);
             var cellWithOrder = postomat.Cells.FirstOrDefault(c => c.Order?.Id == order.Id);
             if (cellWithOrder is null)
-                throw new Exception($"No cell with order \"{order.Id}\" in the postomat \"{postomatId}\"");
+                throw new ReceivingException($"No cell with order \"{order.Id}\" in the postomat \"{postomatId}\".");
 
             var orderPlan = (await _orderPlansRepository.GetAllOrderPlans())
                 .FirstOrDefault(op => op.Order.Id == order.Id);
             if (orderPlan is null)
-                throw new Exception($"Order \"{order.Id}\" has no order plan");
+                throw new UnknownIdentifierException($"Order \"{order.Id}\" has no order plan.");
 
             var updatedOrderPlan = OrderPlan.Create(
                 orderPlan.Id,
@@ -206,7 +217,8 @@ public class PostomatsService : IPostomatsService
                 orderPlan.DeliveredBy,
                 user);
             if (updatedOrderPlan.Error is not null)
-                throw new Exception($"Unable to update order plan for order \"{order.Id}\": {updatedOrderPlan.Error}");
+                throw new ConversionException($"Unable to update order plan for order \"{order.Id}\"." +
+                                              $"--> {updatedOrderPlan.Error}");
 
             var updatedCell = Cell.Create(
                 cellWithOrder.Id,
@@ -214,7 +226,8 @@ public class PostomatsService : IPostomatsService
                 cellWithOrder.PostomatId,
                 null);
             if (updatedCell.Error is not null)
-                throw new Exception($"Unable to clear cell with order \"{order.Id}\": {updatedCell.Error}");
+                throw new ConversionException($"Unable to clear cell with order \"{order.Id}\". " +
+                                              $"--> {updatedCell.Error}");
 
             var updatedOrderPlanId = await _orderPlansRepository
                 .UpdateOrderPlan(orderPlan.Id, updatedOrderPlan.OrderPlan);
@@ -223,9 +236,10 @@ public class PostomatsService : IPostomatsService
 
             return (updatedCellId, updatedOrderPlanId);
         }
-        catch (Exception e)
+        catch (ExpectedException e) when (e is ReceivingException or ConversionException or RepositoryException)
         {
-            throw new Exception($"Unable to clear cell in postomat \"{postomatId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to clear cell in postomat \"{postomatId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -237,9 +251,10 @@ public class PostomatsService : IPostomatsService
 
             return existedCellId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to delete cell \"{cellId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to delete cell \"{cellId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 }

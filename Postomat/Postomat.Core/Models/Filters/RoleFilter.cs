@@ -21,19 +21,17 @@ public class RoleFilter
     {
         var error = string.Empty;
 
-        if (accessLvlFrom is not null &&
-            (accessLvlFrom < MinAccessLvl || accessLvlFrom > MaxAccessLvl))
+        if (accessLvlFrom is < MinAccessLvl or > MaxAccessLvl)
         {
-            error = $"Access lvl can be between {MinAccessLvl} and {MaxAccessLvl}";
+            error = $"Access lvl can be between {MinAccessLvl} and {MaxAccessLvl}.";
         }
-        else if (accessLvlTo is not null &&
-                 (accessLvlTo < MinAccessLvl || accessLvlTo > MaxAccessLvl))
+        else if (accessLvlTo is < MinAccessLvl or > MaxAccessLvl)
         {
-            error = $"Access lvl can be between {MinAccessLvl} and {MaxAccessLvl}";
+            error = $"Access lvl can be between {MinAccessLvl} and {MaxAccessLvl}.";
         }
-        else if (accessLvlFrom is not null && accessLvlTo is not null && accessLvlFrom > accessLvlTo)
+        else if (accessLvlFrom > accessLvlTo)
         {
-            error = "Wrong order of access level from and access level to";
+            error = "Wrong order of access level from and access level to.";
         }
 
         return error;

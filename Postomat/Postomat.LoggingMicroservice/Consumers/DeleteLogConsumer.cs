@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
 
@@ -25,11 +26,23 @@ public class DeleteLogConsumer : IConsumer<MicroserviceDeleteLogRequest>
                 deletedLogId,
                 null));
         }
-        catch (Exception e)
+        catch (ExpectedException e) when (e is ServiceException)
         {
             await context.RespondAsync(new MicroserviceDeleteLogResponse(
                 null,
                 e.Message));
+        }
+        catch (ExpectedException e)
+        {
+            await context.RespondAsync(new MicroserviceDeleteLogResponse(
+                null,
+                $"Unexpected expected error. {e.Message}"));
+        }
+        catch (Exception e)
+        {
+            await context.RespondAsync(new MicroserviceDeleteLogResponse(
+                null,
+                $"Unexpected unexpected error. {e.Message}"));
         }
     }
 }

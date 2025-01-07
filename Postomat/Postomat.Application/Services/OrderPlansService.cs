@@ -1,5 +1,7 @@
 ﻿using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Filters;
 
@@ -22,9 +24,10 @@ public class OrderPlansService : IOrderPlansService
 
             return createdOrderPlanId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to create order plan \"{orderPlan.Id}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to create order plan \"{orderPlan.Id}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -36,13 +39,14 @@ public class OrderPlansService : IOrderPlansService
 
             var orderPlan = allOrderPlans.FirstOrDefault(op => op.Id == orderPlanId);
             if (orderPlan == null)
-                throw new Exception($"Unknown order plan id: \"{orderPlanId}\"");
+                throw new UnknownIdentifierException($"Unknown order plan id: \"{orderPlanId}\".");
 
             return orderPlan;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get order plan \"{orderPlanId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to get order plan \"{orderPlanId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -117,9 +121,10 @@ public class OrderPlansService : IOrderPlansService
             return orderPlans.OrderBy(x => x.LastStatusChangeDate).ToList();
         }
 
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get filtered order plans: \"{e.Message}\"");
+            throw new ServiceException($"Unable to get filtered order plans. " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -131,9 +136,10 @@ public class OrderPlansService : IOrderPlansService
 
             return updatedOrderPlanId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to update order plan \"{orderPlanId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to update order plan \"{orderPlanId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -145,9 +151,10 @@ public class OrderPlansService : IOrderPlansService
 
             return existedOrderPlanId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to delete order plan \"{orderPlanId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to delete order plan \"{orderPlanId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 }

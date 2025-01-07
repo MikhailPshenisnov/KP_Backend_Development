@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions.Repositories;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.DataAccess.Database.Context;
 
@@ -39,15 +40,22 @@ public class LogsRepository : ILogsRepository
             .ToListAsync();
 
         var logs = logEntities
-            .Select(logEntity => Log
-                .Create(
-                    logEntity.Id,
-                    logEntity.Date,
-                    logEntity.Origin,
-                    logEntity.Type,
-                    logEntity.Title,
-                    logEntity.Message)
-                .Log)
+            .Select(logEntity =>
+            {
+                var (logModel, logError) = Log
+                    .Create(
+                        logEntity.Id,
+                        logEntity.Date,
+                        logEntity.Origin,
+                        logEntity.Type,
+                        logEntity.Title,
+                        logEntity.Message);
+                if (!string.IsNullOrEmpty(logError))
+                    throw new ConversionException($"Unable to convert log entity to log model. " +
+                                                  $"--> {logError}");
+
+                return logModel;
+            })
             .ToList();
 
         return logs;
@@ -58,7 +66,7 @@ public class LogsRepository : ILogsRepository
         var oldLog = (await GetAllLogs())
             .FirstOrDefault(l => l.Id == logId);
         if (oldLog is null)
-            throw new Exception($"Unknown log id: \"{logId}\"");
+            throw new UnknownIdentifierException($"Unknown log id: \"{logId}\".");
 
         await _context.Logs
             .Where(l => l.Id == logId)
@@ -79,7 +87,7 @@ public class LogsRepository : ILogsRepository
             .ExecuteDeleteAsync();
 
         if (numUpdated == 0)
-            throw new Exception($"Unknown log id: \"{logId}\"");
+            throw new UnknownIdentifierException($"Unknown log id: \"{logId}\".");
 
         return logId;
     }

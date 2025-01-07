@@ -23,7 +23,7 @@ public class Cell
 
         if (order is not null && cellSize < order.OrderSize)
         {
-            error = $"Incorrect order size: {order.OrderSize} > {cellSize}";
+            error = $"Incorrect order size: {order.OrderSize} > {cellSize}.";
         }
 
         return error;

@@ -1,5 +1,7 @@
 ﻿using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Filters;
 
@@ -22,9 +24,10 @@ public class OrdersService : IOrdersService
 
             return createdOrderId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to create order \"{order.Id}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to create order \"{order.Id}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -36,13 +39,14 @@ public class OrdersService : IOrdersService
 
             var order = allOrders.FirstOrDefault(o => o.Id == orderId);
             if (order == null)
-                throw new Exception($"Unknown order id: \"{orderId}\"");
+                throw new UnknownIdentifierException($"Unknown order id: \"{orderId}\".");
 
             return order;
         }
         catch (Exception e)
         {
-            throw new Exception($"Unable to get order \"{orderId}\": \"{e.Message}\"");
+            throw new Exception($"Unable to get order \"{orderId}\". " +
+                                $"--> {e.Message}");
         }
     }
 
@@ -72,9 +76,10 @@ public class OrdersService : IOrdersService
             return orders.OrderBy(x => x.Id).ToList();
         }
 
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get filtered orders: \"{e.Message}\"");
+            throw new ServiceException($"Unable to get filtered orders. " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -86,9 +91,10 @@ public class OrdersService : IOrdersService
 
             return updatedOrderId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to update order \"{orderId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to update order \"{orderId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -100,9 +106,10 @@ public class OrdersService : IOrdersService
 
             return existedOrderId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to delete order \"{orderId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to delete order \"{orderId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 }

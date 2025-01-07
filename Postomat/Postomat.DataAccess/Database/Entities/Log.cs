@@ -1,4 +1,6 @@
-﻿namespace Postomat.DataAccess.Database.Entities;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Postomat.DataAccess.Database.Entities;
 
 public class Log
 {
@@ -7,5 +9,7 @@ public class Log
     public string Origin { get; set; } = null!;
     public string Type { get; set; } = null!;
     public string Title { get; set; } = null!;
+
+    [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.UnlimitedStringLength")]
     public string Message { get; set; } = null!;
 }

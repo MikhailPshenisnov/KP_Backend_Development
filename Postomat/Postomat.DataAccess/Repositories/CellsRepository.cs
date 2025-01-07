@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions.Repositories;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.DataAccess.Database.Context;
 
@@ -17,13 +18,13 @@ public class CellsRepository : ICellsRepository
     public async Task<Guid> CreateCell(Cell cell)
     {
         if (cell.Order is not null)
-            throw new Exception("You cannot create a cell with an order inside");
+            throw new DestructiveActionException("You cannot create a cell with an order inside.");
 
         var postomatEntity = await _context.Postomats
             .FirstOrDefaultAsync(p => p.Id == cell.PostomatId);
         if (postomatEntity is null)
-            throw new Exception($"Unable to create cell \"{cell.Id}\", " +
-                                $"it has an unknown postomat id \"{cell.PostomatId}\"");
+            throw new UnknownIdentifierException($"Unable to create cell \"{cell.Id}\", " +
+                                                 $"it has an unknown postomat id \"{cell.PostomatId}\".");
 
         var cellEntity = new Database.Entities.Cell
         {
@@ -46,6 +47,26 @@ public class CellsRepository : ICellsRepository
             .AsNoTracking()
             .ToListAsync();
 
+        var postomatEntity = await _context.Postomats
+            .FirstOrDefaultAsync(p => p.Id == postomatId);
+        if (postomatEntity is null)
+        {
+            foreach (var cellEntity in cellEntities)
+            {
+                await _context.Cells
+                    .Where(c => c.Id == cellEntity.Id)
+                    .ExecuteUpdateAsync(x => x
+                        .SetProperty(c => c.OrderId, c => null));
+                await _context.Cells
+                    .Where(c => c.Id == cellEntity.Id)
+                    .ExecuteDeleteAsync();
+            }
+
+            throw new UnknownIdentifierException($"Unable to get postomat \"{postomatId}\" cells, " +
+                                                 $"postomat \"{postomatId}\" does not exist, " +
+                                                 $"cells with that id where cleared and deleted forcibly.");
+        }
+
         var cells = new List<Cell>();
 
         if (cellEntities.Count == 0)
@@ -65,21 +86,34 @@ public class CellsRepository : ICellsRepository
                     .ExecuteUpdateAsync(x => x
                         .SetProperty(c => c.OrderId, c => null));
 
-                throw new Exception($"Cell \"{cellEntity.Id}\" has unknown order id " +
-                                    $"\"{cellEntity.OrderId} and was cleaned forcibly");
+                throw new UnknownIdentifierException($"Cell \"{cellEntity.Id}\" has unknown order id " +
+                                                     $"\"{cellEntity.OrderId} and was cleaned forcibly.");
             }
 
-            var orderModel = orderEntity is not null
-                ? Order.Create(orderEntity.Id, orderEntity.ReceivingCodeHash, orderEntity.OrderSize).Order
-                : null;
+            Order? orderModel = null;
+            if (orderEntity is not null)
+            {
+                (orderModel, var orderError) = Order
+                    .Create(
+                        orderEntity.Id,
+                        orderEntity.ReceivingCodeHash,
+                        orderEntity.OrderSize);
+                if (!string.IsNullOrEmpty(orderError))
+                    throw new ConversionException($"Unable to convert order entity to order model. " +
+                                                  $"--> {orderError}");
+            }
 
-            cells.Add(Cell
+            var (cellModel, cellError) = Cell
                 .Create(
                     cellEntity.Id,
                     cellEntity.CellSize,
                     cellEntity.PostomatId,
-                    orderModel)
-                .Cell);
+                    orderModel);
+            if (!string.IsNullOrEmpty(cellError))
+                throw new ConversionException($"Unable to convert cell entity to cell model. " +
+                                              $"--> {cellError}");
+
+            cells.Add(cellModel);
         }
 
         return cells;
@@ -90,7 +124,7 @@ public class CellsRepository : ICellsRepository
         var oldCellEntity = await _context.Cells
             .FirstOrDefaultAsync(c => c.Id == cellId);
         if (oldCellEntity is null)
-            throw new Exception($"Unknown cell id: \"{cellId}\"");
+            throw new UnknownIdentifierException($"Unknown cell id: \"{cellId}\".");
 
         var postomatEntity = await _context.Postomats
             .FirstOrDefaultAsync(p => p.Id == oldCellEntity.PostomatId);
@@ -105,25 +139,26 @@ public class CellsRepository : ICellsRepository
                 .Where(c => c.Id == oldCellEntity.Id)
                 .ExecuteDeleteAsync();
 
-            throw new Exception($"Cell \"{oldCellEntity.Id}\" has an unknown postomat id " +
-                                $"\"{oldCellEntity.PostomatId}\" and was cleaned forcibly and deleted");
+            throw new UnknownIdentifierException($"Cell \"{oldCellEntity.Id}\" has an unknown postomat id " +
+                                                 $"\"{oldCellEntity.PostomatId}\" and was cleaned and " +
+                                                 $"deleted forcibly.");
         }
 
         if (oldCellEntity.PostomatId != newCell.PostomatId)
-            throw new Exception("You cannot change the postomat id");
+            throw new DestructiveActionException("You cannot change the postomat id.");
 
         if (oldCellEntity.OrderId != newCell.Order?.Id &&
             oldCellEntity.OrderId is not null &&
             newCell.Order?.Id is not null)
-            throw new Exception("You cannot change the order in the cell, only fill or clear it");
+            throw new DestructiveActionException("You cannot change the order in the cell, only fill or clear it.");
 
         if (oldCellEntity.OrderId is not null && newCell.CellSize != oldCellEntity.CellSize)
-            throw new Exception($"You cannot change the size of the cell \"{cellId}\"," +
-                                $"because it contains an order \"{oldCellEntity.OrderId}\".");
+            throw new DestructiveActionException($"You cannot change the size of the cell \"{cellId}\"," +
+                                                 $"because it contains an order \"{oldCellEntity.OrderId}\".");
 
         if (newCell.Order is not null && newCell.Order.OrderSize > newCell.CellSize)
-            throw new Exception($"Cell \"{oldCellEntity.Id}\"/\"{newCell.Id}\" size does not match " +
-                                $"order \"{newCell.Order.Id}\" size");
+            throw new DestructiveActionException($"Cell \"{oldCellEntity.Id}\"/\"{newCell.Id}\" size " +
+                                                 $"does not match order \"{newCell.Order.Id}\" size.");
 
         var orderEntities = await _context.Orders.ToListAsync();
 
@@ -137,15 +172,16 @@ public class CellsRepository : ICellsRepository
                 .ExecuteUpdateAsync(x => x
                     .SetProperty(c => c.OrderId, c => null));
 
-            throw new Exception($"Cell \"{oldCellEntity.Id}\" has unknown order id " +
-                                $"\"{oldCellEntity.OrderId} and was cleaned forcibly");
+            throw new UnknownIdentifierException($"Cell \"{oldCellEntity.Id}\" has unknown order id " +
+                                                 $"\"{oldCellEntity.OrderId} and was cleaned forcibly.");
         }
 
         var newCellOrderEntity = newCell.Order is not null
             ? orderEntities.FirstOrDefault(o => o.Id == oldCellEntity.OrderId)
             : null;
         if (newCell.Order is not null && newCellOrderEntity is null)
-            throw new Exception($"New cell \"{oldCellEntity.Id}\"/\"{newCell.Id}\" has unknown order id");
+            throw new UnknownIdentifierException($"New cell \"{oldCellEntity.Id}\"/\"{newCell.Id}\" " +
+                                                 $"has unknown order id.");
 
         if (newCellOrderEntity is not null)
         {
@@ -154,11 +190,11 @@ public class CellsRepository : ICellsRepository
                 .FirstOrDefault(op => op.OrderId == newCellOrderEntity.Id && op.PostomatId == postomatEntity.Id);
             if (newCellOrderOrderPlanEntity is null)
             {
-                throw new Exception($"A discrepancy was detected between the postomat and the order plan " +
-                                    $"when delivering the order {newCellOrderEntity.Id}.");
+                throw new DestructiveActionException($"A discrepancy was detected between " +
+                                                     $"the postomat and the order plan when " +
+                                                     $"delivering the order {newCellOrderEntity.Id}.");
             }
         }
-
 
         var orderId = newCell.Order?.Id;
         await _context.Cells
@@ -176,11 +212,11 @@ public class CellsRepository : ICellsRepository
             .FirstOrDefaultAsync(c => c.Id == cellId);
 
         if (cell is null)
-            throw new Exception($"Unknown cell id: \"{cellId}\"");
+            throw new UnknownIdentifierException($"Unknown cell id: \"{cellId}\".");
 
         if (cell.OrderId is not null)
-            throw new Exception($"Deleting a cell \"{cellId}\" is destructive, " +
-                                $"it contains an order \"{cell.OrderId}\"");
+            throw new DestructiveActionException($"Deleting a cell \"{cellId}\" is destructive, " +
+                                                 $"it contains an order \"{cell.OrderId}\".");
 
         await _context.Cells
             .Where(c => c.Id == cellId)

@@ -54,7 +54,7 @@ public class DeliveryController : ControllerBase
         try
         {
             HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
-            var authToken = authHeader.ToString().Replace("Bearer ", "");
+            var authToken = authHeader.ToString().Replace("Bearer ", string.Empty);
 
             var (checkResult, user) = await CheckAccessLvl(
                 authToken, (int)AccessLvlEnumerator.FiredEmployee - 1, cancellationToken);
@@ -82,7 +82,7 @@ public class DeliveryController : ControllerBase
         try
         {
             HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
-            var authToken = authHeader.ToString().Replace("Bearer ", "");
+            var authToken = authHeader.ToString().Replace("Bearer ", string.Empty);
 
             var (checkResult, user) = await CheckAccessLvl(
                 authToken, (int)AccessLvlEnumerator.FiredEmployee - 1, cancellationToken);

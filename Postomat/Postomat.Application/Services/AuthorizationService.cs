@@ -1,18 +1,22 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Postomat.Application.Services;
 
 public class AuthorizationService : IAuthorizationService
 {
     private readonly IUsersService _usersService;
+    private readonly IConfiguration _configuration;
 
-    public AuthorizationService(IUsersService usersService)
+    public AuthorizationService(IUsersService usersService, IConfiguration configuration)
     {
         _usersService = usersService;
+        _configuration = configuration;
     }
 
     public async Task<string> LoginUser(string login, string password, CancellationToken ct)
@@ -23,18 +27,18 @@ public class AuthorizationService : IAuthorizationService
                 .FirstOrDefault(u => u.Login == login);
 
             if (user == null)
-                throw new Exception("Invalid login or password");
+                throw new ServiceException("Invalid login or password.");
 
             if (login != user.Login || !BCrypt.Net.BCrypt.EnhancedVerify(password, user.PasswordHash))
-                throw new Exception("Invalid login or password");
-            
-            var token = GenerateJwtToken(user.Id, user.Role.Id);
-            return token;
+                throw new ServiceException("Invalid login or password.");
 
+            var token = await GenerateJwtToken(user.Id, user.Role.Id);
+            return token;
         }
         catch (Exception e)
         {
-            throw new Exception($"Unable to login user: {e.Message}");
+            throw new ServiceException($"Unable to login user. " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -42,7 +46,7 @@ public class AuthorizationService : IAuthorizationService
     {
         try
         {
-            var principal = ValidateJwtToken(token);
+            var principal = await ValidateJwtToken(token);
 
             var uId = Guid.Parse(principal.FindFirst("userId")?.Value!);
             var rId = Guid.Parse(principal.FindFirst("roleId")?.Value!);
@@ -51,14 +55,16 @@ public class AuthorizationService : IAuthorizationService
         }
         catch (Exception e)
         {
-            throw new Exception($"Invalid token: {e.Message}");
+            throw new ServiceException($"Invalid token. " +
+                                       $"--> {e.Message}");
         }
     }
 
-    private static string GenerateJwtToken(Guid userId, Guid roleId)
+    private Task<string> GenerateJwtToken(Guid userId, Guid roleId)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes("very_strong_and_super_super_secret_key_123!"); /* TODO */
+        var authorizationConfig = _configuration.GetSection("AuthorizationServiceKeys");
+        var key = Encoding.UTF8.GetBytes(authorizationConfig["ValidationSecretKey"] ?? string.Empty);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(
@@ -72,13 +78,14 @@ public class AuthorizationService : IAuthorizationService
                 SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        return Task.FromResult(tokenHandler.WriteToken(token));
     }
 
-    private static ClaimsPrincipal ValidateJwtToken(string token)
+    private Task<ClaimsPrincipal> ValidateJwtToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes("very_strong_and_super_super_secret_key_123!"); /* TODO */
+        var authorizationConfig = _configuration.GetSection("AuthorizationServiceKeys");
+        var key = Encoding.UTF8.GetBytes(authorizationConfig["ValidationSecretKey"] ?? string.Empty);
         var validationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -87,6 +94,6 @@ public class AuthorizationService : IAuthorizationService
             ValidateAudience = false
         };
         var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-        return principal;
+        return Task.FromResult(principal);
     }
 }

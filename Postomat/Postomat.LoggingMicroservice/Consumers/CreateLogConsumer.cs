@@ -1,6 +1,7 @@
 ﻿using MassTransit;
-using Microsoft.IdentityModel.Tokens;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
 using Postomat.Core.Models;
@@ -25,8 +26,9 @@ public class CreateLogConsumer : IConsumer<MicroserviceCreateLogRequest>
             var (log, error) = Log.Create(request.LogDto.Id, request.LogDto.Date, request.LogDto.Origin,
                 request.LogDto.Type, request.LogDto.Title, request.LogDto.Message);
 
-            if (!error.IsNullOrEmpty())
-                throw new Exception("Unable to convert log dto to log model");
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert log dto to log model. " +
+                                              $"--> {error}");
 
             var createdLogId = await _logsService.CreateLogAsync(log, new CancellationToken());
 
@@ -34,11 +36,23 @@ public class CreateLogConsumer : IConsumer<MicroserviceCreateLogRequest>
                 createdLogId,
                 null));
         }
-        catch (Exception e)
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
         {
             await context.RespondAsync(new MicroserviceCreateLogResponse(
                 null,
                 e.Message));
+        }
+        catch (ExpectedException e)
+        {
+            await context.RespondAsync(new MicroserviceCreateLogResponse(
+                null,
+                $"Unexpected expected error. {e.Message}"));
+        }
+        catch (Exception e)
+        {
+            await context.RespondAsync(new MicroserviceCreateLogResponse(
+                null,
+                $"Unexpected unexpected error. {e.Message}"));
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Filters;
 
@@ -22,9 +24,10 @@ public class RolesService : IRolesService
 
             return createdRoleId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to create role \"{role.Id}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to create role \"{role.Id}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -36,13 +39,14 @@ public class RolesService : IRolesService
 
             var role = allRoles.FirstOrDefault(r => r.Id == roleId);
             if (role == null)
-                throw new Exception($"Unknown role id: \"{roleId}\"");
+                throw new UnknownIdentifierException($"Unknown role id: \"{roleId}\".");
 
             return role;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get role \"{roleId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to get role \"{roleId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -79,9 +83,10 @@ public class RolesService : IRolesService
             return roles.OrderBy(x => x.AccessLvl).ThenBy(x => x.RoleName).ToList();
         }
 
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get filtered roles: \"{e.Message}\"");
+            throw new ServiceException($"Unable to get filtered roles. " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -93,9 +98,10 @@ public class RolesService : IRolesService
 
             return updatedRoleId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to update role \"{roleId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to update role \"{roleId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -107,9 +113,10 @@ public class RolesService : IRolesService
 
             return existedRoleId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to delete role \"{roleId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to delete role \"{roleId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 }

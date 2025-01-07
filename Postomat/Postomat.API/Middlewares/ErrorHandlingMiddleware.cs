@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
 using MassTransit;
-using Microsoft.IdentityModel.Tokens;
 using Postomat.Core.Contracrs;
 using Postomat.Core.Exceptions.BaseExceptions;
 using Postomat.Core.Exceptions.SpecificExceptions;
@@ -51,19 +50,19 @@ public class ErrorHandlingMiddleware
                 id: Guid.NewGuid(),
                 date: DateTime.Now.ToUniversalTime(),
                 origin: exception.InnerException?.StackTrace?.Split("\r\n")[0].TrimStart()[3..].Split(" in ")[0] ??
-                        exception.StackTrace?.Split("\r\n")[0].TrimStart()[3..].Split(" in ")[0] ?? "",
+                        exception.StackTrace?.Split("\r\n")[0].TrimStart()[3..].Split(" in ")[0] ?? string.Empty,
                 type: exception.InnerException?.GetType().ToString() ??
                       exception.GetType().ToString(),
                 title: exception.InnerException is not null
-                    ? !exception.Message.IsNullOrEmpty()
-                        ? exception.Message.Replace(".", "")
+                    ? !string.IsNullOrEmpty(exception.Message)
+                        ? exception.Message.Replace(".", string.Empty)
                         : exception.InnerException.GetType().Name
                     : exception.GetType().Name,
                 message: exception.InnerException is not null
                     ? exception.InnerException.Message
                     : exception.Message);
 
-            if (!error.IsNullOrEmpty())
+            if (!string.IsNullOrEmpty(error))
                 throw new ConversionException($"Unable to create error log. --> {error}");
 
             var microserviceResponse = (await _createLogClient

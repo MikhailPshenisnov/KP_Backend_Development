@@ -62,7 +62,7 @@ public class AuthorizationController : ControllerBase
             if (!response.Message.IsSuccess)
                 return Unauthorized(new BaseResponse<LoginUserResponse>(
                     null,
-                    response.Message.ErrorMessage ?? ""));
+                    response.Message.ErrorMessage ?? string.Empty));
 
             if (response.Message.Token is null)
                 throw new Exception("If login is successful, the token cannot be empty.");
@@ -93,7 +93,7 @@ public class AuthorizationController : ControllerBase
             Request.Cookies.TryGetValue("jwt_token", out var jwtToken);
 
             return Ok(new BaseResponse<GetCurrentUserTokenResponse>(
-                new GetCurrentUserTokenResponse(jwtToken ?? ""),
+                new GetCurrentUserTokenResponse(jwtToken ?? string.Empty),
                 null));
         }
         catch (Exception e)
@@ -111,7 +111,7 @@ public class AuthorizationController : ControllerBase
         try
         {
             HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
-            var authToken = authHeader.ToString().Replace("Bearer ", "");
+            var authToken = authHeader.ToString().Replace("Bearer ", string.Empty);
 
             var (checkResult, user) = await CheckAccessLvl(
                 authToken, (int)AccessLvlEnumerator.DeliveryMan - 1, cancellationToken);
@@ -121,7 +121,7 @@ public class AuthorizationController : ControllerBase
             var response = (await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
                 new MicroserviceValidateTokenRequest(validateTokenRequest.Token), cancellationToken)).Message;
             if (!response.IsValid)
-                return Ok(new BaseResponse<ValidateTokenResponse>(null, response.ErrorMessage ?? ""));
+                return Ok(new BaseResponse<ValidateTokenResponse>(null, response.ErrorMessage ?? string.Empty));
             if (response.UserDto is null)
                 throw new Exception("If token is valid, the user cannot be empty.");
 
@@ -144,7 +144,7 @@ public class AuthorizationController : ControllerBase
     {
         try
         {
-            Response.Cookies.Append("jwt_token", "", new CookieOptions
+            Response.Cookies.Append("jwt_token", string.Empty, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,

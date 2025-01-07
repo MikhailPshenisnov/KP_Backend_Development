@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions.Repositories;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.DataAccess.Database.Context;
 
@@ -22,33 +24,35 @@ public class OrderPlansRepository : IOrderPlansRepository
     public async Task<Guid> CreateOrderPlan(OrderPlan orderPlan)
     {
         if (orderPlan.Status != "Created")
-            throw new Exception("You can only create order plans with the status \"Created\"");
+            throw new DestructiveActionException("You can only create order plans with the status \"Created\".");
 
         if (orderPlan.StoreUntilDate is not null)
-            throw new Exception("The order should not be delivered initially, change the storage time to");
+            throw new DestructiveActionException("The order should not be delivered initially, " +
+                                                 "change the storage time to.");
 
         var existedOrderPlan = await _context.OrderPlans
             .FirstOrDefaultAsync(op => op.OrderId == orderPlan.Order.Id);
         if (existedOrderPlan is not null)
-            throw new Exception($"An order plan for the order \"{orderPlan.Order.Id}\" already exists");
+            throw new DestructiveActionException($"An order plan for the order \"{orderPlan.Order.Id}\" " +
+                                                 $"already exists.");
 
         var order = await _context.Orders
             .FirstOrDefaultAsync(o => o.Id == orderPlan.Order.Id);
         if (order is null)
-            throw new Exception($"Unknown order id: \"{orderPlan.Order.Id}\"");
+            throw new UnknownIdentifierException($"Unknown order id: \"{orderPlan.Order.Id}\".");
 
         var postomat = await _context.Postomats
             .FirstOrDefaultAsync(p => p.Id == orderPlan.Postomat.Id);
         if (postomat is null)
-            throw new Exception($"Unknown postomat id: \"{orderPlan.Postomat.Id}\"");
+            throw new UnknownIdentifierException($"Unknown postomat id: \"{orderPlan.Postomat.Id}\".");
 
         var creator = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == orderPlan.CreatedBy.Id);
         if (creator is null)
-            throw new Exception($"Unknown order plan creator id: \"{orderPlan.CreatedBy.Id}\"");
+            throw new UnknownIdentifierException($"Unknown order plan creator id: \"{orderPlan.CreatedBy.Id}\".");
 
         if (orderPlan.DeliveredBy is not null || orderPlan.DeliveredBackBy is not null)
-            throw new Exception("Created order cannot be delivered initially");
+            throw new DestructiveActionException("Created order cannot be delivered initially.");
 
         var orderPlanEntity = new Database.Entities.OrderPlan
         {
@@ -85,9 +89,10 @@ public class OrderPlansRepository : IOrderPlansRepository
             postomats = await _postomatsRepository.GetAllPostomats();
             users = await _usersRepository.GetAllUsers();
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"An error occurred when getting the order plans {e.Message}");
+            throw new RepositoryException($"An error occurred when getting the order plans. " +
+                                          $"--> {e.Message}");
         }
 
         var orderPlans = new List<OrderPlan>();
@@ -100,8 +105,8 @@ public class OrderPlansRepository : IOrderPlansRepository
                     .Where(op => op.Id == orderPlanEntity.Id)
                     .ExecuteDeleteAsync();
 
-                throw new Exception($"Order plan \"{orderPlanEntity.Id}\" has unknown order id " +
-                                    $"\"{orderPlanEntity.OrderId}\" and was deleted forcibly");
+                throw new UnknownIdentifierException($"Order plan \"{orderPlanEntity.Id}\" has unknown order id " +
+                                                     $"\"{orderPlanEntity.OrderId}\" and was deleted forcibly.");
             }
 
             var cellWithOrder = await _context.Cells.FirstOrDefaultAsync(c => c.OrderId == order.Id);
@@ -111,8 +116,8 @@ public class OrderPlansRepository : IOrderPlansRepository
                     .Where(op => op.Id == orderPlanEntity.Id)
                     .ExecuteDeleteAsync();
 
-                throw new Exception($"It seems the order \"{order.Id}\" was lost, " +
-                                    $"the order plan \"{orderPlanEntity.Id}\" was deleted forcibly");
+                throw new UnknownIdentifierException($"It seems the order \"{order.Id}\" was lost, the order plan " +
+                                                     $"\"{orderPlanEntity.Id}\" was deleted forcibly.");
             }
 
             var postomat = postomats.FirstOrDefault(p => p.Id == orderPlanEntity.PostomatId);
@@ -127,10 +132,10 @@ public class OrderPlansRepository : IOrderPlansRepository
                     .Where(op => op.Id == orderPlanEntity.Id)
                     .ExecuteDeleteAsync();
 
-                throw new Exception($"Order plan \"{orderPlanEntity.Id}\" has unknown postomat id " +
-                                    $"\"{orderPlanEntity.PostomatId}\", cells containing an order " +
-                                    $"from this order plan ({numUpdated} cells) have been cleared " +
-                                    $"forcibly and deleted, also the order plan has been deleted");
+                throw new UnknownIdentifierException($"Order plan \"{orderPlanEntity.Id}\" has unknown postomat id " +
+                                                     $"\"{orderPlanEntity.PostomatId}\", cells containing an order " +
+                                                     $"from this order plan ({numUpdated} cells) have been cleared " +
+                                                     $"forcibly and deleted, also the order plan has been deleted.");
             }
 
             var creator = users.FirstOrDefault(u => u.Id == orderPlanEntity.CreatedBy);
@@ -149,23 +154,38 @@ public class OrderPlansRepository : IOrderPlansRepository
                     .Where(op => op.Id == orderPlanEntity.Id)
                     .ExecuteDeleteAsync();
 
-                throw new Exception($"Order plan \"{orderPlanEntity.Id}\" has unknown user id for one of users, " +
-                                    $"cells containing an order from this order plan ({numUpdated} cells) have been " +
-                                    $"cleared forcibly and the order plan has been deleted");
+                throw new UnknownIdentifierException($"Order plan \"{orderPlanEntity.Id}\" has unknown user id " +
+                                                     $"for one of users, cells containing an order from this order " +
+                                                     $"plan ({numUpdated} cells) have been cleared forcibly and the " +
+                                                     $"order plan has been deleted.");
             }
 
-            orderPlans.Add(OrderPlan
+            var (orderModel, orderError) = Order
+                .Create(
+                    order.Id,
+                    order.ReceivingCodeHash,
+                    order.OrderSize);
+            if (!string.IsNullOrEmpty(orderError))
+                throw new ConversionException($"Unable to convert order entity to order model. " +
+                                              $"--> {orderError}");
+
+            var (orderPlanModel, orderPlanError) = OrderPlan
                 .Create(
                     orderPlanEntity.Id,
                     orderPlanEntity.Status,
                     orderPlanEntity.LastStatusChangeDate,
                     orderPlanEntity.StoreUntilDate,
                     orderPlanEntity.DeliveryCodeHash,
-                    Order.Create(order.Id, order.ReceivingCodeHash, order.OrderSize).Order,
+                    orderModel,
                     postomat,
                     creator,
                     deliver1,
-                    deliver2).OrderPlan);
+                    deliver2);
+            if (!string.IsNullOrEmpty(orderPlanError))
+                throw new ConversionException($"Unable to convert order plan entity to order plan model. " +
+                                              $"--> {orderPlanError}");
+
+            orderPlans.Add(orderPlanModel);
         }
 
         return orderPlans;
@@ -177,47 +197,47 @@ public class OrderPlansRepository : IOrderPlansRepository
             .FirstOrDefault(op => op.Id == orderPlanId);
 
         if (oldOrderPlan is null)
-            throw new Exception($"Unknown order plan id: \"{orderPlanId}\"");
+            throw new UnknownIdentifierException($"Unknown order plan id: \"{orderPlanId}\".");
 
         if (oldOrderPlan.Status == "Finished")
-            throw new Exception("You cannot edit finished orders");
+            throw new DestructiveActionException("You cannot edit finished orders.");
         if (((oldOrderPlan.Status == "Created" && newOrderPlan.Status != "Delivered") ||
              (oldOrderPlan.Status == "Delivered" && newOrderPlan.Status != "Finished")) &&
             oldOrderPlan.Status != newOrderPlan.Status)
-            throw new Exception("You should change the statuses in the order \"Created\" -> " +
-                                "\"Delivered\" -> \"Finished\" or not change it");
+            throw new DestructiveActionException("You should change the statuses in the order \"Created\" -> " +
+                                                 "\"Delivered\" -> \"Finished\" or not change it.");
 
         var orderEntity = await _context.Orders
             .FirstOrDefaultAsync(o => o.Id == newOrderPlan.Order.Id);
         if (orderEntity is null)
-            throw new Exception($"New order plan \"{newOrderPlan.Id}\" " +
-                                $"has unknown order id \"{newOrderPlan.Order.Id}\"");
+            throw new UnknownIdentifierException($"New order plan \"{newOrderPlan.Id}\" " +
+                                                 $"has unknown order id \"{newOrderPlan.Order.Id}\".");
 
         var postomatEntity = await _context.Postomats
             .FirstOrDefaultAsync(p => p.Id == newOrderPlan.Postomat.Id);
         if (postomatEntity is null)
-            throw new Exception($"New order plan \"{newOrderPlan.Id}\" " +
-                                $"has unknown postomat id \"{newOrderPlan.Postomat.Id}\"");
+            throw new UnknownIdentifierException($"New order plan \"{newOrderPlan.Id}\" " +
+                                                 $"has unknown postomat id \"{newOrderPlan.Postomat.Id}\".");
 
         var users = await _context.Users.ToListAsync();
 
         var creator = users
             .FirstOrDefault(u => u.Id == newOrderPlan.CreatedBy.Id);
         if (creator is null)
-            throw new Exception($"New order plan \"{newOrderPlan.Id}\" " +
-                                $"has unknown creator id \"{newOrderPlan.CreatedBy.Id}\"");
+            throw new UnknownIdentifierException($"New order plan \"{newOrderPlan.Id}\" " +
+                                                 $"has unknown creator id \"{newOrderPlan.CreatedBy.Id}\".");
 
         var deliver1 = users
             .FirstOrDefault(u => newOrderPlan.DeliveredBy != null && u.Id == newOrderPlan.DeliveredBy.Id);
         if (newOrderPlan.DeliveredBy is not null && deliver1 is null)
-            throw new Exception($"New order plan \"{newOrderPlan.Id}\" " +
-                                $"has unknown deliver1 id \"{newOrderPlan.DeliveredBy.Id}\"");
+            throw new UnknownIdentifierException($"New order plan \"{newOrderPlan.Id}\" " +
+                                                 $"has unknown deliver1 id \"{newOrderPlan.DeliveredBy.Id}\".");
 
         var deliver2 = users
             .FirstOrDefault(u => newOrderPlan.DeliveredBackBy != null && u.Id == newOrderPlan.DeliveredBackBy.Id);
         if (newOrderPlan.DeliveredBackBy is not null && deliver2 is null)
-            throw new Exception($"New order plan \"{newOrderPlan.Id}\" " +
-                                $"has unknown deliver2 id \"{newOrderPlan.DeliveredBackBy.Id}\"");
+            throw new UnknownIdentifierException($"New order plan \"{newOrderPlan.Id}\" " +
+                                                 $"has unknown deliver2 id \"{newOrderPlan.DeliveredBackBy.Id}\".");
 
         var deliveredById = deliver1?.Id;
         var deliveredBackById = deliver2?.Id;
@@ -243,10 +263,10 @@ public class OrderPlansRepository : IOrderPlansRepository
             .FirstOrDefault(op => op.Id == orderPlanId);
 
         if (orderPlan is null)
-            throw new Exception($"Unknown order plan id: \"{orderPlanId}\"");
+            throw new UnknownIdentifierException($"Unknown order plan id: \"{orderPlanId}\".");
 
         if (orderPlan.Status != "Created" && orderPlan.Status != "Finished")
-            throw new Exception("You can only delete created or finished orders");
+            throw new DestructiveActionException("You can only delete created or finished orders.");
 
         await _context.OrderPlans
             .Where(op => op.Id == orderPlanId)

@@ -31,23 +31,19 @@ public class OrderPlanFilter
 
         if (lastStatusChangeDateFrom is not null && lastStatusChangeDateFrom > DateTime.Now)
         {
-            error = "Last status change date from can't be from the future";
+            error = "Last status change date from can't be from the future.";
         }
-        else if (lastStatusChangeDateFrom is not null &&
-                 lastStatusChangeDateTo is not null &&
-                 lastStatusChangeDateFrom > lastStatusChangeDateTo)
+        else if (lastStatusChangeDateFrom > lastStatusChangeDateTo)
         {
-            error = "Wrong order of last status change date from and last status change date to";
+            error = "Wrong order of last status change date from and last status change date to.";
         }
         else if (storeUntilDateFrom is not null && storeUntilDateFrom > DateTime.Now)
         {
-            error = "Store until date from can't be from the future";
+            error = "Store until date from can't be from the future.";
         }
-        else if (storeUntilDateFrom is not null &&
-                 storeUntilDateTo is not null &&
-                 storeUntilDateFrom > storeUntilDateTo)
+        else if (storeUntilDateFrom > storeUntilDateTo)
         {
-            error = "Wrong order of store until date from and store until date to";
+            error = "Wrong order of store until date from and store until date to.";
         }
 
         return error;

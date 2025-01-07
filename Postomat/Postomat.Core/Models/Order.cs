@@ -23,7 +23,7 @@ public class Order
 
         if (string.IsNullOrEmpty(receivingCodeHash) || receivingCodeHash.Length > MaxReceivingCodeHashLength)
         {
-            error = $"Receiving code hash can't be longer than {MaxReceivingCodeHashLength} characters or empty";
+            error = $"Receiving code hash can't be longer than {MaxReceivingCodeHashLength} characters or empty.";
         }
 
         return error;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions.Repositories;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.DataAccess.Database.Context;
 
@@ -36,12 +37,19 @@ public class OrdersRepository : IOrdersRepository
             .ToListAsync();
 
         var orders = orderEntities
-            .Select(orderEntity => Order
-                .Create(
-                    orderEntity.Id,
-                    orderEntity.ReceivingCodeHash,
-                    orderEntity.OrderSize)
-                .Order)
+            .Select(orderEntity =>
+            {
+                var (orderModel, orderError) = Order
+                    .Create(
+                        orderEntity.Id,
+                        orderEntity.ReceivingCodeHash,
+                        orderEntity.OrderSize);
+                if (!string.IsNullOrEmpty(orderError))
+                    throw new ConversionException($"Unable to convert order entity to order model. " +
+                                                  $"--> {orderError}");
+
+                return orderModel;
+            })
             .ToList();
 
         return orders;
@@ -52,14 +60,15 @@ public class OrdersRepository : IOrdersRepository
         var oldOrderEntity = await _context.Orders
             .FirstOrDefaultAsync(o => o.Id == orderId);
         if (oldOrderEntity is null)
-            throw new Exception($"Unknown order id: \"{orderId}\"");
+            throw new UnknownIdentifierException($"Unknown order id: \"{orderId}\".");
 
         var cellWithOrderEntity = await _context.Cells
             .FirstOrDefaultAsync(c => c.OrderId == oldOrderEntity.Id);
         if (cellWithOrderEntity is not null && newOrder.OrderSize > cellWithOrderEntity.CellSize)
-            throw new Exception($"It is impossible to change the order size for order \"{orderId}\", " +
-                                $"due to the discrepancy between the new size and the size of the " +
-                                $"cell \"{cellWithOrderEntity.Id}\" in which the order is already stored");
+            throw new DestructiveActionException($"It is impossible to change the order size for order " +
+                                                 $"\"{orderId}\", due to the discrepancy between the new " +
+                                                 $"size and the size of the cell \"{cellWithOrderEntity.Id}\" " +
+                                                 $"in which the order is already stored.");
 
         await _context.Orders
             .Where(o => o.Id == orderId)
@@ -75,22 +84,22 @@ public class OrdersRepository : IOrdersRepository
         var cellWithOrderEntity = await _context.Cells
             .FirstOrDefaultAsync(c => c.OrderId == orderId);
         if (cellWithOrderEntity is not null)
-            throw new Exception($"Deleting an order \"{orderId}\" is destructive, " +
-                                $"it is contained in a cell \"{cellWithOrderEntity.Id}\" " +
-                                $"at the postomat \"{cellWithOrderEntity.PostomatId}\"");
+            throw new DestructiveActionException($"Deleting an order \"{orderId}\" is destructive, " +
+                                                 $"it is contained in a cell \"{cellWithOrderEntity.Id}\" " +
+                                                 $"at the postomat \"{cellWithOrderEntity.PostomatId}\".");
 
         var orderPlanWithOrderEntity = await _context.OrderPlans
             .FirstOrDefaultAsync(op => op.Order.Id == orderId);
         if (orderPlanWithOrderEntity is not null)
-            throw new Exception($"Deleting an order \"{orderId}\" is destructive, " +
-                                $"it is contained in an order plan \"{orderPlanWithOrderEntity.Id}\"");
+            throw new DestructiveActionException($"Deleting an order \"{orderId}\" is destructive, it is " +
+                                                 $"contained in an order plan \"{orderPlanWithOrderEntity.Id}\".");
 
         var numUpdated = await _context.Orders
             .Where(o => o.Id == orderId)
             .ExecuteDeleteAsync();
 
         if (numUpdated == 0)
-            throw new Exception($"Unknown order id: \"{orderId}\"");
+            throw new UnknownIdentifierException($"Unknown order id: \"{orderId}\".");
 
         return orderId;
     }

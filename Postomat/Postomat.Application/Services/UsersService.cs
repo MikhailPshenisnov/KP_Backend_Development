@@ -1,5 +1,7 @@
 ﻿using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Filters;
 
@@ -22,9 +24,10 @@ public class UsersService : IUsersService
 
             return createdUserId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to create user \"{user.Id}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to create user \"{user.Id}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -36,13 +39,14 @@ public class UsersService : IUsersService
 
             var user = allUsers.FirstOrDefault(u => u.Id == userId);
             if (user == null)
-                throw new Exception($"Unknown user id: \"{userId}\"");
+                throw new UnknownIdentifierException($"Unknown user id: \"{userId}\".");
 
             return user;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get user \"{userId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to get user \"{userId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -72,9 +76,10 @@ public class UsersService : IUsersService
             return users.OrderBy(x => x.Role.AccessLvl).ThenBy(x => x.Login).ToList();
         }
 
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to get filtered users: \"{e.Message}\"");
+            throw new ServiceException($"Unable to get filtered users. " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -86,9 +91,10 @@ public class UsersService : IUsersService
 
             return updatedUserId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to update user \"{userId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to update user \"{userId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -100,9 +106,10 @@ public class UsersService : IUsersService
 
             return existedUserId;
         }
-        catch (Exception e)
+        catch (RepositoryException e)
         {
-            throw new Exception($"Unable to delete user \"{userId}\": \"{e.Message}\"");
+            throw new ServiceException($"Unable to delete user \"{userId}\". " +
+                                       $"--> {e.Message}");
         }
     }
 }

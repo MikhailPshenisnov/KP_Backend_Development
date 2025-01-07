@@ -24,11 +24,11 @@ public class User
 
         if (string.IsNullOrEmpty(login) || login.Length > MaxLoginLength)
         {
-            error = $"Login can't be longer than {MaxLoginLength} characters or empty";
+            error = $"Login can't be longer than {MaxLoginLength} characters or empty.";
         }
         else if (string.IsNullOrEmpty(passwordHash) || passwordHash.Length > MaxPasswordHashLength)
         {
-            error = $"Password hash can't be longer than {MaxPasswordHashLength} characters or empty";
+            error = $"Password hash can't be longer than {MaxPasswordHashLength} characters or empty.";
         }
 
         return error;

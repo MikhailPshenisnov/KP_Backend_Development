@@ -1,9 +1,9 @@
-using Postomat.DataAccess.Database.Context;
 using MassTransit;
 using Postomat.Application.Services;
 using Postomat.AuthorizationMicroservice.Consumers;
 using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Abstractions.Services;
+using Postomat.DataAccess.Database.Context;
 using Postomat.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,12 +24,14 @@ builder.Services.AddDbContext<PostomatDbContext>();
 // Message broker
 builder.Services.AddMassTransit(x =>
 {
+    var rabbitMqConfig = builder.Configuration.GetSection("RabbitMQ");
+
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("rabbitmq://localhost", h =>
+        cfg.Host(rabbitMqConfig["Host"] ?? string.Empty, h =>
         {
-            h.Username("guest");
-            h.Password("guest");
+            h.Username(rabbitMqConfig["Username"] ?? string.Empty);
+            h.Password(rabbitMqConfig["Password"] ?? string.Empty);
         });
 
         cfg.ConfigureEndpoints(context);

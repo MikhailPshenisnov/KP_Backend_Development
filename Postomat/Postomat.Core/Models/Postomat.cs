@@ -24,15 +24,15 @@ public class Postomat
 
         if (cells.Count == 0)
         {
-            error = "Postomat must have at least one cell";
+            error = "Postomat must have at least one cell.";
         }
         else if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
         {
-            error = $"Name can't be longer than {MaxNameLength} characters or empty";
+            error = $"Name can't be longer than {MaxNameLength} characters or empty.";
         }
         else if (string.IsNullOrEmpty(address) || address.Length > MaxAddressLength)
         {
-            error = $"Address can't be longer than {MaxAddressLength} characters or empty";
+            error = $"Address can't be longer than {MaxAddressLength} characters or empty.";
         }
 
         return error;

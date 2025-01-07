@@ -1,4 +1,7 @@
-﻿using Postomat.Core.Abstractions.Services;
+﻿using MassTransit;
+using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Filters;
 
@@ -24,7 +27,7 @@ public class DeliveryService : IDeliveryService
         {
             var postomat = await _postomatsService.GetPostomatAsync(postomatId, ct);
             if (postomat is null)
-                throw new Exception($"Unknown postomat id \"{postomatId}\"");
+                throw new UnknownIdentifierException($"Unknown postomat id: \"{postomatId}\".");
 
             var filter = OrderPlanFilter
                 .Create(null,
@@ -35,8 +38,9 @@ public class DeliveryService : IDeliveryService
                     null,
                     postomat.Id,
                     null);
-            if (filter.Error is not null)
-                throw new Exception($"Unable to create filter for order plan: {filter.Error}");
+            if (!string.IsNullOrEmpty(filter.Error))
+                throw new ConventionException($"Unable to create filter for order plan. " +
+                                              $"--> {filter.Error}");
 
             var orderIds = (await _orderPlansService
                     .GetFilteredOrderPlansAsync(filter.OrderPlanFilter, ct))
@@ -44,7 +48,7 @@ public class DeliveryService : IDeliveryService
                 .Select(op => op.Order.Id)
                 .ToList();
             if (orderIds.Count == 0)
-                throw new Exception($"Unknown delivery code \"{deliveryCode}\"");
+                throw new DeliveringException($"Unknown delivery code: \"{deliveryCode}\".");
 
             foreach (var orderId in orderIds)
             {
@@ -54,9 +58,15 @@ public class DeliveryService : IDeliveryService
 
             return orderIds[0];
         }
-        catch (Exception e)
+        catch (DeliveringException e)
         {
-            throw new Exception($"Unable to deliver order: {e.Message}");
+            throw new ServiceException($"Unable to deliver order. " +
+                                       $"--> {e.Message}");
+        }
+        catch (ExpectedException e) when (e is UnknownIdentifierException or ConversionException)
+        {
+            throw new ServiceException($"Something went wrong while delivering order. " +
+                                       $"--> {e.Message}");
         }
     }
 
@@ -66,7 +76,7 @@ public class DeliveryService : IDeliveryService
         {
             var postomat = await _postomatsService.GetPostomatAsync(postomatId, ct);
             if (postomat is null)
-                throw new Exception($"Unknown postomat id \"{postomatId}\"");
+                throw new UnknownIdentifierException($"Unknown postomat id: \"{postomatId}\".");
 
             var filter = OrderPlanFilter
                 .Create(null,
@@ -78,7 +88,8 @@ public class DeliveryService : IDeliveryService
                     postomat.Id,
                     null);
             if (filter.Error is not null)
-                throw new Exception($"Unable to create filter for order plan: {filter.Error}");
+                throw new ConversionException($"Unable to create filter for order plan. " +
+                                              $"--> {filter.Error}");
 
             var orderIds = (await _orderPlansService
                     .GetFilteredOrderPlansAsync(filter.OrderPlanFilter, ct))
@@ -87,7 +98,7 @@ public class DeliveryService : IDeliveryService
                 .Select(op => op.Order.Id)
                 .ToList();
             if (orderIds.Count == 0)
-                throw new Exception($"Unknown delivery code \"{deliveryCode}\"");
+                throw new DeliveringException($"Unknown delivery code: \"{deliveryCode}\".");
 
             foreach (var orderId in orderIds)
             {
@@ -97,9 +108,15 @@ public class DeliveryService : IDeliveryService
 
             return orderIds[0];
         }
-        catch (Exception e)
+        catch (DeliveringException e)
         {
-            throw new Exception($"Unable to deliver order: {e.Message}");
+            throw new ServiceException($"Unable to deliver order back. " +
+                                       $"--> {e.Message}");
+        }
+        catch (ExpectedException e) when (e is UnknownIdentifierException or ConversionException)
+        {
+            throw new ServiceException($"Something went wrong while delivering order back. " +
+                                       $"--> {e.Message}");
         }
     }
 }

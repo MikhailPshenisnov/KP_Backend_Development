@@ -1,4 +1,6 @@
 ﻿using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 
 namespace Postomat.Application.Services;
 
@@ -18,19 +20,21 @@ public class CustomerService : ICustomerService
             var postomat = await _postomatsService.GetPostomatAsync(postomatId, ct);
 
             var cellsWithOrder = postomat.Cells
-                .Where(c => BCrypt.Net.BCrypt.EnhancedVerify(receivingCode, c.Order?.ReceivingCodeHash))
+                .Where(c => BCrypt.Net.BCrypt
+                    .EnhancedVerify(receivingCode, c.Order?.ReceivingCodeHash ?? string.Empty))
                 .ToList();
             if (cellsWithOrder.Count == 0)
-                throw new Exception($"Unknown receiving code \"{receivingCode}\"");
+                throw new ReceivingException($"Unknown receiving code: \"{receivingCode}\".");
 
             foreach (var cell in cellsWithOrder)
                 await _postomatsService.ClearCellInPostomatAsync(null, postomatId, cell.Order!, ct);
 
             return cellsWithOrder[0].Id;
         }
-        catch (Exception e)
+        catch (ServiceException e)
         {
-            throw new Exception($"Unable to receive order: {e.Message}");
+            throw new ServiceException($"Unable to receive order. " +
+                                       $"--> {e.Message}");
         }
     }
 }

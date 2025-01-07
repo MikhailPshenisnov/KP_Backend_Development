@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Postomat.Core.Abstractions.Services;
+using Postomat.Core.Exceptions.BaseExceptions;
 using Postomat.Core.MessageBrokerContracts;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
@@ -29,12 +30,19 @@ public class ValidateTokenConsumer : IConsumer<MicroserviceValidateTokenRequest>
                 new UserDto(userId, roleId),
                 null));
         }
-        catch (Exception e)
+        catch (ExpectedException e)
         {
             await context.RespondAsync(new MicroserviceValidateTokenResponse(
                 false,
                 null,
                 e.Message));
+        }
+        catch (Exception e)
+        {
+            await context.RespondAsync(new MicroserviceValidateTokenResponse(
+                false,
+                null,
+                $"Unexpected unexpected error. {e.Message}"));
         }
     }
 }

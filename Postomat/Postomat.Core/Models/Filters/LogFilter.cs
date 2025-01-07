@@ -26,11 +26,11 @@ public class LogFilter
 
         if (dateFrom is not null && dateTo > DateTime.Now)
         {
-            error = "Date from can't be from the future";
+            error = "Date from can't be from the future.";
         }
-        else if (dateFrom is not null && dateTo is not null && dateFrom > dateTo)
+        else if (dateFrom > dateTo)
         {
-            error = "Wrong order of date from and date to";
+            error = "Wrong order of date from and date to.";
         }
 
         return error;

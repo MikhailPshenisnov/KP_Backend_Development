@@ -29,19 +29,19 @@ public class Log
 
         if (date > DateTime.Now)
         {
-            error = "Date can't be from the future";
+            error = "Date can't be from the future.";
         }
         else if (string.IsNullOrEmpty(origin) || origin.Length > MaxOriginLength)
         {
-            error = $"Origin can't be longer than {MaxOriginLength} characters or empty";
+            error = $"Origin can't be longer than {MaxOriginLength} characters or empty.";
         }
         else if (string.IsNullOrEmpty(type) || type.Length > MaxTypeLength)
         {
-            error = $"Type can't be longer than {MaxTypeLength} characters or empty";
+            error = $"Type can't be longer than {MaxTypeLength} characters or empty.";
         }
         else if (string.IsNullOrEmpty(title) || title.Length > MaxTitleLength)
         {
-            error = $"Title can't be longer than {MaxTitleLength} characters or empty";
+            error = $"Title can't be longer than {MaxTitleLength} characters or empty.";
         }
 
         return error;

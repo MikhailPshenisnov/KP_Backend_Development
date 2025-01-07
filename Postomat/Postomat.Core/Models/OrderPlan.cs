@@ -38,15 +38,15 @@ public class OrderPlan
 
         if (status.Length > MaxStatusLength)
         {
-            error = $"Status can't be longer than {MaxStatusLength} characters or empty";
+            error = $"Status can't be longer than {MaxStatusLength} characters or empty.";
         }
         else if (deliveryCodeHash.Length > MaxDeliveryCodeHashLength)
         {
-            error = $"Delivery code hash can't be longer than {MaxDeliveryCodeHashLength} characters or empty";
+            error = $"Delivery code hash can't be longer than {MaxDeliveryCodeHashLength} characters or empty.";
         }
         else if (lastStatusChangeDate > DateTime.Now)
         {
-            error = $"Last status change date can't be from the future";
+            error = "Last status change date can't be from the future.";
         }
 
         return error;

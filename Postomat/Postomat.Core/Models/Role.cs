@@ -25,11 +25,11 @@ public class Role
 
         if (string.IsNullOrEmpty(roleName) || roleName.Length > MaxRoleNameLength)
         {
-            error = $"Role name can't be longer than {MaxRoleNameLength} characters or empty";
+            error = $"Role name can't be longer than {MaxRoleNameLength} characters or empty.";
         }
-        else if (accessLvl < MinAccessLvl || accessLvl > MaxAccessLvl)
+        else if (accessLvl is < MinAccessLvl or > MaxAccessLvl)
         {
-            error = $"Access level must be between {MinAccessLvl} and {MaxAccessLvl}";
+            error = $"Access level must be between {MinAccessLvl} and {MaxAccessLvl}.";
         }
 
         return error;

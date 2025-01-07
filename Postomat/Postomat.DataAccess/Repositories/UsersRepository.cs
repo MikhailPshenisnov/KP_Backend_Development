@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions.Repositories;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Other;
 using Postomat.DataAccess.Database.Context;
@@ -20,12 +21,14 @@ public class UsersRepository : IUsersRepository
         var existedUserEntity = await _context.Users
             .FirstOrDefaultAsync(u => u.Login == user.Login);
         if (existedUserEntity is not null)
-            throw new Exception($"Unable to create user \"{user.Id}\", login \"{user.Login}\" is already in use");
+            throw new DestructiveActionException($"Unable to create user \"{user.Id}\", " +
+                                                 $"login \"{user.Login}\" is already in use.");
 
         var roleEntity = await _context.Roles
             .FirstOrDefaultAsync(r => r.Id == user.Role.Id);
         if (roleEntity is null)
-            throw new Exception($"Unable to create user \"{user.Id}\", it has an unknown role id \"{user.Role.Id}\"");
+            throw new UnknownIdentifierException($"Unable to create user \"{user.Id}\", " +
+                                                 $"it has an unknown role id \"{user.Role.Id}\".");
 
         var userEntity = new Database.Entities.User
         {
@@ -57,23 +60,40 @@ public class UsersRepository : IUsersRepository
             {
                 var baseRoleEntity = await _context.Roles
                     .FirstOrDefaultAsync(r => r.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee);
+                if (baseRoleEntity is null)
+                    throw new UnknownIdentifierException($"User \"{userEntity.Id}\" has unknown role id " +
+                                                         $"\"{userEntity.RoleId}\", role has not been reset " +
+                                                         $"to basic level, base user role does not exist.");
+
                 await _context.Users
                     .Where(u => u.Id == userEntity.Id)
                     .ExecuteUpdateAsync(x => x
-                        .SetProperty(u => u.RoleId, u => baseRoleEntity!.Id));
-                throw new Exception($"User \"{userEntity.Id}\" has unknown role id \"{userEntity.RoleId}\"," +
-                                    $"role has been reset to basic level");
+                        .SetProperty(u => u.RoleId, u => baseRoleEntity.Id));
+                throw new UnknownIdentifierException($"User \"{userEntity.Id}\" has unknown role id " +
+                                                     $"\"{userEntity.RoleId}\", role has been reset " +
+                                                     $"to basic level.");
             }
 
-            var roleModel = Role.Create(roleEntity.Id, roleEntity.RoleName, roleEntity.AccessLvl).Role;
+            var (roleModel, roleError) = Role
+                .Create(
+                    roleEntity.Id,
+                    roleEntity.RoleName,
+                    roleEntity.AccessLvl);
+            if (!string.IsNullOrEmpty(roleError))
+                throw new ConversionException($"Unable to convert role entity to role model. " +
+                                              $"--> {roleError}");
 
-            users.Add(User
+            var (userModel, userError) = User
                 .Create(
                     userEntity.Id,
                     userEntity.Login,
                     userEntity.PasswordHash,
-                    roleModel)
-                .User);
+                    roleModel);
+            if (!string.IsNullOrEmpty(userError))
+                throw new ConversionException($"Unable to convert user entity to user model. " +
+                                              $"--> {userError}");
+
+            users.Add(userModel);
         }
 
         return users;
@@ -85,11 +105,12 @@ public class UsersRepository : IUsersRepository
         var oldUserEntity = userEntities
             .FirstOrDefault(u => u.Id == userId);
         if (oldUserEntity is null)
-            throw new Exception($"Unknown user id: \"{userId}\"");
+            throw new UnknownIdentifierException($"Unknown user id: \"{userId}\".");
         var existedUserEntity = userEntities
             .FirstOrDefault(u => u.Id != oldUserEntity.Id && u.Login == newUser.Login);
         if (existedUserEntity is not null)
-            throw new Exception($"Unable to update user \"{userId}\", login \"{newUser.Login}\" is already in use");
+            throw new DestructiveActionException($"Unable to update user \"{userId}\", " +
+                                                 $"login \"{newUser.Login}\" is already in use.");
 
         var roleEntities = await _context.Roles.ToListAsync();
         var oldUserRoleEntity = roleEntities.FirstOrDefault(r => r.Id == oldUserEntity.RoleId);
@@ -97,17 +118,23 @@ public class UsersRepository : IUsersRepository
         {
             var baseRoleEntity = await _context.Roles
                 .FirstOrDefaultAsync(r => r.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee);
+            if (baseRoleEntity is null)
+                throw new UnknownIdentifierException($"User \"{oldUserEntity.Id}\" has unknown role id " +
+                                                     $"\"{oldUserEntity.RoleId}\", role has not been reset " +
+                                                     $"to basic level, base user role does not exist.");
+
             await _context.Users
                 .Where(u => u.Id == oldUserEntity.Id)
                 .ExecuteUpdateAsync(x => x
-                    .SetProperty(u => u.RoleId, u => baseRoleEntity!.Id));
-            throw new Exception($"User \"{oldUserEntity.Id}\" has unknown role id \"{oldUserEntity.RoleId}\"," +
-                                $"role has been reset to basic level");
+                    .SetProperty(u => u.RoleId, u => baseRoleEntity.Id));
+            throw new UnknownIdentifierException($"User \"{oldUserEntity.Id}\" has unknown role id " +
+                                                 $"\"{oldUserEntity.RoleId}\", role has been reset " +
+                                                 $"to basic level.");
         }
 
         var newUserRoleEntity = roleEntities.FirstOrDefault(r => r.Id == newUser.Role.Id);
         if (newUserRoleEntity is null)
-            throw new Exception($"User \"{newUser.Id}\" has unknown role id \"{newUser.Role.Id}\"");
+            throw new UnknownIdentifierException($"User \"{newUser.Id}\" has unknown role id \"{newUser.Role.Id}\".");
 
         await _context.Users
             .Where(u => u.Id == userId)
@@ -126,24 +153,19 @@ public class UsersRepository : IUsersRepository
             .FirstOrDefault(u => u.Id == userId);
 
         if (user is null)
-            throw new Exception($"Unknown user id: \"{userId}\"");
+            throw new UnknownIdentifierException($"Unknown user id: \"{userId}\".");
 
-        if (user.Role.AccessLvl == (int)AccessLvlEnumerator.SuperUser)
-            throw new Exception("You cannot delete the superuser");
-
-        if (user.Role.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee &&
-            users.Where(u => u.Role.AccessLvl == (int)AccessLvlEnumerator.FiredEmployee).ToList().Count == 1)
-        {
-            throw new Exception("You cannot delete last base user role");
-        }
+        if (user.Role.AccessLvl == (int)AccessLvlEnumerator.SuperUser &&
+            users.Where(u => u.Role.AccessLvl == (int)AccessLvlEnumerator.SuperUser).ToList().Count == 1)
+            throw new DestructiveActionException("You cannot delete the last superuser.");
 
         var orderPlanWithUser = await _context.OrderPlans
             .FirstOrDefaultAsync(op => op.CreatedBy == userId ||
                                        op.DeliveredBy == userId ||
                                        op.DeliveredBackBy == userId);
         if (orderPlanWithUser is not null)
-            throw new Exception($"Deleting an user \"{userId}\" is destructive, " +
-                                $"it is contained in an order plan \"{orderPlanWithUser.Id}\"");
+            throw new DestructiveActionException($"Deleting an user \"{userId}\" is destructive, " +
+                                                 $"it is contained in an order plan \"{orderPlanWithUser.Id}\".");
 
         await _context.Users
             .Where(u => u.Id == userId)

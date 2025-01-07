@@ -17,19 +17,17 @@ public class OrderFilter
     {
         var error = string.Empty;
 
-        if (orderSizeFrom is not null &&
-            (orderSizeFrom < SizeEnumerator.Small || orderSizeFrom > SizeEnumerator.Large))
+        if (orderSizeFrom is < SizeEnumerator.Small or > SizeEnumerator.Large)
         {
-            error = $"Size can be between {(int)SizeEnumerator.Small} and {(int)SizeEnumerator.Large}";
+            error = $"Size can be between {(int)SizeEnumerator.Small} and {(int)SizeEnumerator.Large}.";
         }
-        else if (orderSizeTo is not null &&
-                 (orderSizeTo < SizeEnumerator.Small || orderSizeTo > SizeEnumerator.Large))
+        else if (orderSizeTo is < SizeEnumerator.Small or > SizeEnumerator.Large)
         {
-            error = $"Size can be between {(int)SizeEnumerator.Small} and {(int)SizeEnumerator.Large}";
+            error = $"Size can be between {(int)SizeEnumerator.Small} and {(int)SizeEnumerator.Large}.";
         }
-        else if (orderSizeFrom is not null && orderSizeTo is not null && orderSizeFrom > orderSizeTo)
+        else if (orderSizeFrom > orderSizeTo)
         {
-            error = "Wrong order of order size from and order size to";
+            error = "Wrong order of order size from and order size to.";
         }
 
         return error;
