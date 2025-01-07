@@ -51,9 +51,9 @@ public class PostomatDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("Logs_pkey");
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Origin).HasMaxLength(128);
-            entity.Property(e => e.Title).HasMaxLength(128);
-            entity.Property(e => e.Type).HasMaxLength(128);
+            entity.Property(e => e.Origin).HasMaxLength(256);
+            entity.Property(e => e.Title).HasMaxLength(256);
+            entity.Property(e => e.Type).HasMaxLength(256);
         });
 
         modelBuilder.Entity<Order>(entity =>

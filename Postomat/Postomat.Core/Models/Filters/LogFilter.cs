@@ -39,6 +39,15 @@ public class LogFilter
     public static (LogFilter LogFilter, string Error) Create(DateTime? dateFrom, DateTime? dateTo, string? partOfOrigin,
         string? partOfType, string? partOfTitle, string? partOfMessage)
     {
+        if (partOfOrigin == string.Empty)
+            partOfOrigin = null;
+        if (partOfType == string.Empty)
+            partOfType = null;
+        if (partOfTitle == string.Empty)
+            partOfTitle = null;
+        if (partOfMessage == string.Empty)
+            partOfMessage = null;
+
         var error = BasicChecks(dateFrom, dateTo);
 
         var logFilter = new LogFilter(dateFrom, dateTo, partOfOrigin, partOfType, partOfTitle, partOfMessage);

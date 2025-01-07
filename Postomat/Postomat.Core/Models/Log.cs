@@ -2,9 +2,10 @@
 
 public class Log
 {
-    public const int MaxOriginLength = 128;
-    public const int MaxTypeLength = 128;
-    public const int MaxTitleLength = 128;
+    public const int MaxOriginLength = 256;
+    public const int MaxTypeLength = 256;
+    public const int MaxTitleLength = 256;
+    public const int MinTitleLength = 5;
 
     private Log(Guid id, DateTime date, string origin, string type, string title, string message)
     {
@@ -42,6 +43,10 @@ public class Log
         else if (string.IsNullOrEmpty(title) || title.Length > MaxTitleLength)
         {
             error = $"Title can't be longer than {MaxTitleLength} characters or empty.";
+        }
+        else if (title.Length < MinTitleLength)
+        {
+            error = $"Title can't be shorter than {MinTitleLength} characters.";
         }
 
         return error;

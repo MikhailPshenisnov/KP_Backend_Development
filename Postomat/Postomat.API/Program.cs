@@ -47,6 +47,9 @@ builder.Services
 // Authorization
 builder.Services.AddAuthorization();
 
+// Service for data initialization
+builder.Services.AddTransient<IDataInitializationService, DataInitializationService>();
+
 // Services for controllers
 builder.Services.AddTransient<IAccessCheckService, AccessCheckService>();
 builder.Services.AddTransient<IAuthorizationService, AuthorizationService>();
@@ -124,5 +127,25 @@ app.UseAuthorization();
 
 app.UseHttpsRedirection();
 app.MapControllers();
+
+// Data initialization
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var initializer = scope.ServiceProvider.GetRequiredService<IDataInitializationService>();
+        await initializer.InitializeData(new CancellationToken());
+
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<IDataInitializationService>>();
+        logger.LogInformation("Start data initialized successfully");
+    }
+    catch (Exception e)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<IDataInitializationService>>();
+        logger.LogCritical(e, "An error occurred during data initialization");
+
+        Environment.Exit(1);
+    }
+}
 
 app.Run();

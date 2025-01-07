@@ -3,6 +3,7 @@
 public class User
 {
     public const int MaxLoginLength = 128;
+    public const int MinLoginLength = 5;
     public const int MaxPasswordHashLength = 128;
 
     private User(Guid id, string login, string passwordHash, Role role)
@@ -25,6 +26,18 @@ public class User
         if (string.IsNullOrEmpty(login) || login.Length > MaxLoginLength)
         {
             error = $"Login can't be longer than {MaxLoginLength} characters or empty.";
+        }
+        else if (login.Length < MinLoginLength)
+        {
+            error = $"Login can't be shorter than {MinLoginLength} characters.";
+        }
+        else if (string.IsNullOrWhiteSpace(login))
+        {
+            error = "Login can't be line only with whitespaces.";
+        }
+        else if (!System.Text.RegularExpressions.Regex.IsMatch(login, "^[a-zA-Z0-9_.-]+$"))
+        {
+            error = "Incorrect symbols in login.";
         }
         else if (string.IsNullOrEmpty(passwordHash) || passwordHash.Length > MaxPasswordHashLength)
         {

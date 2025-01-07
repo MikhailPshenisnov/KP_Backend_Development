@@ -5,6 +5,7 @@ namespace Postomat.Core.Models;
 public class Role
 {
     public const int MaxRoleNameLength = 128;
+    public const int MinRoleNameLength = 5;
     public const int MinAccessLvl = (int)AccessLvlEnumerator.SuperUser;
     public const int MaxAccessLvl = (int)AccessLvlEnumerator.FiredEmployee;
 
@@ -26,6 +27,10 @@ public class Role
         if (string.IsNullOrEmpty(roleName) || roleName.Length > MaxRoleNameLength)
         {
             error = $"Role name can't be longer than {MaxRoleNameLength} characters or empty.";
+        }
+        else if (roleName.Length < MinRoleNameLength)
+        {
+            error = $"Role name can't be shorter than {MinRoleNameLength} characters.";
         }
         else if (accessLvl is < MinAccessLvl or > MaxAccessLvl)
         {

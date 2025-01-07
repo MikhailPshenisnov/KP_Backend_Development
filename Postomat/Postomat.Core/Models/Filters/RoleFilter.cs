@@ -40,6 +40,9 @@ public class RoleFilter
     public static (RoleFilter RoleFilter, string Error) Create(string? partOfRoleName, int? accessLvlFrom,
         int? accessLvlTo)
     {
+        if (partOfRoleName == string.Empty)
+            partOfRoleName = null;
+
         var error = BasicChecks(accessLvlFrom, accessLvlTo);
 
         var roleFilter = new RoleFilter(partOfRoleName, accessLvlFrom, accessLvlTo);

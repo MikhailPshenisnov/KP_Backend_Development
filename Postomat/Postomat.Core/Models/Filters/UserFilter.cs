@@ -20,6 +20,9 @@ public class UserFilter
 
     public static (UserFilter UserFilter, string Error) Create(string? partOfLogin, Guid? roleId)
     {
+        if (partOfLogin == string.Empty)
+            partOfLogin = null;
+
         var error = BasicChecks();
 
         var userFilter = new UserFilter(partOfLogin, roleId);

@@ -19,6 +19,12 @@ public class UsersRepository : IUsersRepository
 
     public async Task<Guid> CreateUser(User user)
     {
+        var users = await GetAllUsers();
+        
+        if (user.Role.AccessLvl == (int)AccessLvlEnumerator.SuperUser &&
+            users.Where(u => u.Role.AccessLvl == (int)AccessLvlEnumerator.SuperUser).ToList().Count >= 1)
+            throw new DestructiveActionException("You cannot create one more superuser.");
+        
         var existedUserEntity = await _context.Users
             .FirstOrDefaultAsync(u => u.Login == user.Login);
         if (existedUserEntity is not null)

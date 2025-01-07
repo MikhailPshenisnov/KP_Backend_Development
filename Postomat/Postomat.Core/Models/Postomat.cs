@@ -4,6 +4,8 @@ public class Postomat
 {
     public const int MaxNameLength = 128;
     public const int MaxAddressLength = 128;
+    public const int MinNameLength = 8;
+    public const int MinAddressLength = 20;
 
     private Postomat(Guid id, string name, string address, List<Cell> cells)
     {
@@ -30,9 +32,17 @@ public class Postomat
         {
             error = $"Name can't be longer than {MaxNameLength} characters or empty.";
         }
+        else if (name.Length < MinNameLength)
+        {
+            error = $"Name can't be shorter than {MinNameLength} characters.";
+        }
         else if (string.IsNullOrEmpty(address) || address.Length > MaxAddressLength)
         {
             error = $"Address can't be longer than {MaxAddressLength} characters or empty.";
+        }
+        else if (address.Length < MinAddressLength)
+        {
+            error = $"Address can't be shorter than {MinAddressLength} characters.";
         }
 
         return error;

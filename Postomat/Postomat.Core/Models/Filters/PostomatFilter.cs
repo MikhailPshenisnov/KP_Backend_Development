@@ -20,6 +20,11 @@ public class PostomatFilter
 
     public static (PostomatFilter PostomatFilter, string Error) Create(string? partOfName, string? partOfAddress)
     {
+        if (partOfName == string.Empty)
+            partOfName = null;
+        if (partOfAddress == string.Empty)
+            partOfAddress = null;
+
         var error = BasicChecks();
 
         var postomatFilter = new PostomatFilter(partOfName, partOfAddress);

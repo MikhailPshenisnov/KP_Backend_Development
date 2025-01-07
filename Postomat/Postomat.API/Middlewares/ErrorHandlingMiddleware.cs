@@ -15,12 +15,10 @@ namespace Postomat.API.Middlewares;
 public class ErrorHandlingMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly IRequestClient<MicroserviceCreateLogRequest> _createLogClient;
 
-    public ErrorHandlingMiddleware(RequestDelegate next, IRequestClient<MicroserviceCreateLogRequest> createLogClient)
+    public ErrorHandlingMiddleware(RequestDelegate next)
     {
         _next = next;
-        _createLogClient = createLogClient;
     }
 
     public async Task Invoke(HttpContext context)
@@ -51,6 +49,10 @@ public class ErrorHandlingMiddleware
     {
         try
         {
+            using var scope = context.RequestServices.CreateScope();
+            var createLogClient = scope.ServiceProvider
+                .GetRequiredService<IRequestClient<MicroserviceCreateLogRequest>>();
+            
             var (log, error) = Log.Create(
                 id: Guid.NewGuid(),
                 date: DateTime.Now.ToUniversalTime(),
@@ -71,7 +73,7 @@ public class ErrorHandlingMiddleware
                 throw new ConversionException($"Unable to create error log. " +
                                               $"--> {error}");
 
-            var microserviceResponse = (await _createLogClient
+            var microserviceResponse = (await createLogClient
                 .GetResponse<MicroserviceCreateLogResponse>(new MicroserviceCreateLogRequest(
                     new LogDto(log.Id, log.Date, log.Origin, log.Type, log.Title, log.Message)))).Message;
 
