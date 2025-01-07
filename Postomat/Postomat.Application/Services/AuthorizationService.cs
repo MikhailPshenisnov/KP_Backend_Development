@@ -5,6 +5,7 @@ using Postomat.Core.Exceptions.BaseExceptions;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Postomat.Core.Exceptions.SpecificExceptions;
 
 namespace Postomat.Application.Services;
 
@@ -27,10 +28,10 @@ public class AuthorizationService : IAuthorizationService
                 .FirstOrDefault(u => u.Login == login);
 
             if (user == null)
-                throw new ServiceException("Invalid login or password.");
+                throw new AccessException("Invalid login or password.");
 
             if (login != user.Login || !BCrypt.Net.BCrypt.EnhancedVerify(password, user.PasswordHash))
-                throw new ServiceException("Invalid login or password.");
+                throw new AccessException("Invalid login or password.");
 
             var token = await GenerateJwtToken(user.Id, user.Role.Id);
             return token;

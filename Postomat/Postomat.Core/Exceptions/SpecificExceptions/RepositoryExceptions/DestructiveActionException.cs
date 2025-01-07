@@ -1,6 +1,6 @@
 ﻿using Postomat.Core.Exceptions.BaseExceptions;
 
-namespace Postomat.Core.Exceptions.SpecificExceptions;
+namespace Postomat.Core.Exceptions.SpecificExceptions.RepositoryExceptions;
 
 public class DestructiveActionException : RepositoryException
 {

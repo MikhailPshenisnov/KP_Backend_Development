@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Postomat.Core.Abstractions.Repositories;
 using Postomat.Core.Exceptions.SpecificExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions.RepositoryExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Other;
 using Postomat.DataAccess.Database.Context;

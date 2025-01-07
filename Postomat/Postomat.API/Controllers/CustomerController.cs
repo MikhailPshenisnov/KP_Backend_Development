@@ -3,6 +3,7 @@ using Postomat.API.Contracts.Requests;
 using Postomat.API.Contracts.Responses;
 using Postomat.Core.Abstractions.Services;
 using Postomat.Core.Contracrs;
+using Postomat.Core.Exceptions.BaseExceptions;
 
 namespace Postomat.API.Controllers;
 
@@ -11,13 +12,10 @@ namespace Postomat.API.Controllers;
 public class CustomerController : ControllerBase
 {
     private readonly ICustomerService _customerService;
-    private readonly IControllerErrorLogService _controllerErrorLogService;
 
-    public CustomerController(ICustomerService customerService,
-        IControllerErrorLogService controllerErrorLogService)
+    public CustomerController(ICustomerService customerService)
     {
         _customerService = customerService;
-        _controllerErrorLogService = controllerErrorLogService;
     }
 
     [HttpGet]
@@ -33,10 +31,10 @@ public class CustomerController : ControllerBase
                 new ReceiveOrderResponse("Order received successfully"),
                 null));
         }
-        catch (Exception e)
+        catch (ServiceException e)
         {
-            return Ok(await _controllerErrorLogService.CreateErrorLog<ReceiveOrderResponse>(
-                "Customer controller", "Error while receiving order", e.Message));
+            throw new ControllerException($"Error while receiving order. " +
+                                          $"--> {e.Message}");
         }
     }
 }

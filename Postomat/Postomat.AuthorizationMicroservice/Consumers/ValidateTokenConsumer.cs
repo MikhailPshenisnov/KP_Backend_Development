@@ -28,6 +28,15 @@ public class ValidateTokenConsumer : IConsumer<MicroserviceValidateTokenRequest>
             await context.RespondAsync(new MicroserviceValidateTokenResponse(
                 true,
                 new UserDto(userId, roleId),
+                "Ok",
+                null));
+        }
+        catch (ServiceException e)
+        {
+            await context.RespondAsync(new MicroserviceValidateTokenResponse(
+                false,
+                null,
+                e.Message,
                 null));
         }
         catch (ExpectedException e)
@@ -35,12 +44,14 @@ public class ValidateTokenConsumer : IConsumer<MicroserviceValidateTokenRequest>
             await context.RespondAsync(new MicroserviceValidateTokenResponse(
                 false,
                 null,
-                e.Message));
+                null,
+                $"Unexpected expected error. {e.Message}"));
         }
         catch (Exception e)
         {
             await context.RespondAsync(new MicroserviceValidateTokenResponse(
                 false,
+                null,
                 null,
                 $"Unexpected unexpected error. {e.Message}"));
         }

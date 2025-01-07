@@ -2,18 +2,18 @@
 
 namespace Postomat.Core.Exceptions.SpecificExceptions;
 
-public class ReceivingException : ServiceException
+public class AccessException : ExpectedException
 {
-    public ReceivingException()
+    public AccessException()
     {
     }
 
-    public ReceivingException(string message)
+    public AccessException(string message)
         : base(message)
     {
     }
 
-    public ReceivingException(string message, Exception inner)
+    public AccessException(string message, Exception inner)
         : base(message, inner)
     {
     }

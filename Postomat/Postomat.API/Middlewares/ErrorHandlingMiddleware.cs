@@ -4,6 +4,7 @@ using MassTransit;
 using Postomat.Core.Contracrs;
 using Postomat.Core.Exceptions.BaseExceptions;
 using Postomat.Core.Exceptions.SpecificExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions.ControllerExceptions;
 using Postomat.Core.MessageBrokerContracts;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
@@ -27,6 +28,10 @@ public class ErrorHandlingMiddleware
         try
         {
             await _next(context);
+        }
+        catch (ExpectedException e) when (e is AccessException or ReceivingException or DeliveringException)
+        {
+            await HandleExceptionWithoutLogAsync(context, e);
         }
         catch (ExpectedException e) when (e is ControllerException or Core.Exceptions.BaseExceptions.ConsumerException)
         {
@@ -63,7 +68,8 @@ public class ErrorHandlingMiddleware
                     : exception.Message);
 
             if (!string.IsNullOrEmpty(error))
-                throw new ConversionException($"Unable to create error log. --> {error}");
+                throw new ConversionException($"Unable to create error log. " +
+                                              $"--> {error}");
 
             var microserviceResponse = (await _createLogClient
                 .GetResponse<MicroserviceCreateLogResponse>(new MicroserviceCreateLogRequest(
@@ -71,7 +77,8 @@ public class ErrorHandlingMiddleware
 
             if (microserviceResponse.ErrorMessage is not null)
                 throw new Core.Exceptions.BaseExceptions.ConsumerException(
-                    $"Unable to create error log (microservice error). --> {error}");
+                    $"Unable to create error log (microservice error). " +
+                    $"--> {error}");
 
             var errorResponse = new BaseResponse<string>(
                 null,
@@ -89,11 +96,23 @@ public class ErrorHandlingMiddleware
 
             var errorResponse = new BaseResponse<string>(
                 null,
-                $"{message} Error log was not created. --> \"{e.Message}\"");
+                $"{message} Error log was not created. " +
+                $"--> {e.Message}");
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
         }
+    }
+
+    private async Task HandleExceptionWithoutLogAsync(HttpContext context, ExpectedException exception)
+    {
+        var errorResponse = new BaseResponse<string>(
+            null,
+            exception.Message);
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.OK;
+        await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
     }
 }

@@ -2,6 +2,8 @@
 using Postomat.Core.Abstractions.Services;
 using Postomat.Core.Exceptions.BaseExceptions;
 using Postomat.Core.Exceptions.SpecificExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions.ControllerExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions.RepositoryExceptions;
 using Postomat.Core.Models;
 using Postomat.Core.Models.Filters;
 
@@ -162,7 +164,7 @@ public class PostomatsService : IPostomatsService
                 orderPlan.CreatedBy,
                 user,
                 orderPlan.DeliveredBackBy);
-            if (updatedOrderPlan.Error is not null)
+            if (!string.IsNullOrEmpty(updatedOrderPlan.Error))
                 throw new ConversionException($"Unable to update order plan for order \"{order.Id}\". " +
                                               $"--> {updatedOrderPlan.Error}");
 
@@ -171,7 +173,7 @@ public class PostomatsService : IPostomatsService
                 suitableCell.CellSize,
                 suitableCell.PostomatId,
                 order);
-            if (updatedCell.Error is not null)
+            if (!string.IsNullOrEmpty(updatedCell.Error))
                 throw new ConversionException($"Unable to fill cell with order \"{order.Id}\". " +
                                               $"--> {updatedCell.Error}");
 
@@ -182,7 +184,7 @@ public class PostomatsService : IPostomatsService
 
             return (updatedCellId, updatedOrderPlanId);
         }
-        catch (ExpectedException e) when (e is DeliveringException or ConversionException or RepositoryException)
+        catch (ExpectedException e) when (e is ConversionException or RepositoryException)
         {
             throw new ServiceException($"Unable to fill cell in postomat \"{postomatId}\". " +
                                        $"--> {e.Message}");
@@ -198,7 +200,11 @@ public class PostomatsService : IPostomatsService
             var postomat = await GetPostomatAsync(postomatId, ct);
             var cellWithOrder = postomat.Cells.FirstOrDefault(c => c.Order?.Id == order.Id);
             if (cellWithOrder is null)
-                throw new ReceivingException($"No cell with order \"{order.Id}\" in the postomat \"{postomatId}\".");
+            {
+                if (user is null)
+                    throw new ReceivingException($"No cell with order \"{order.Id}\" in the postomat \"{postomatId}\".");
+                throw new DeliveringException($"No cell with order \"{order.Id}\" in the postomat \"{postomatId}\".");
+            }
 
             var orderPlan = (await _orderPlansRepository.GetAllOrderPlans())
                 .FirstOrDefault(op => op.Order.Id == order.Id);
@@ -216,7 +222,7 @@ public class PostomatsService : IPostomatsService
                 orderPlan.CreatedBy,
                 orderPlan.DeliveredBy,
                 user);
-            if (updatedOrderPlan.Error is not null)
+            if (!string.IsNullOrEmpty(updatedOrderPlan.Error))
                 throw new ConversionException($"Unable to update order plan for order \"{order.Id}\"." +
                                               $"--> {updatedOrderPlan.Error}");
 
@@ -225,7 +231,7 @@ public class PostomatsService : IPostomatsService
                 cellWithOrder.CellSize,
                 cellWithOrder.PostomatId,
                 null);
-            if (updatedCell.Error is not null)
+            if (string.IsNullOrEmpty(updatedCell.Error))
                 throw new ConversionException($"Unable to clear cell with order \"{order.Id}\". " +
                                               $"--> {updatedCell.Error}");
 
@@ -236,7 +242,7 @@ public class PostomatsService : IPostomatsService
 
             return (updatedCellId, updatedOrderPlanId);
         }
-        catch (ExpectedException e) when (e is ReceivingException or ConversionException or RepositoryException)
+        catch (ExpectedException e) when (e is ConversionException or RepositoryException)
         {
             throw new ServiceException($"Unable to clear cell in postomat \"{postomatId}\". " +
                                        $"--> {e.Message}");

@@ -30,7 +30,7 @@ builder.Services
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = false,
-            SignatureValidator = (token, parameters) =>
+            SignatureValidator = (token, _) =>
                 new Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler().ReadJsonWebToken(token)
         };
 
@@ -48,6 +48,7 @@ builder.Services
 builder.Services.AddAuthorization();
 
 // Services for controllers
+builder.Services.AddTransient<IAccessCheckService, AccessCheckService>();
 builder.Services.AddTransient<IAuthorizationService, AuthorizationService>();
 builder.Services.AddTransient<ICustomerService, CustomerService>();
 builder.Services.AddTransient<IDeliveryService, DeliveryService>();
@@ -73,7 +74,7 @@ builder.Services.AddDbContext<PostomatDbContext>();
 // CORS policy
 builder.Services.AddCors(options => options.AddPolicy(
     "PostomatApiPolicy", b => b
-        .WithOrigins("https://localhost:5173") // frontend address
+        .WithOrigins(builder.Configuration.GetSection("Frontend")["FrontendAddress"] ?? string.Empty)
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials()));
@@ -81,13 +82,17 @@ builder.Services.AddCors(options => options.AddPolicy(
 // Message broker
 builder.Services.AddMassTransit(x =>
 {
+    var rabbitMqConfig = builder.Configuration.GetSection("RabbitMQ");
+
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("rabbitmq://localhost", h =>
+        cfg.Host(rabbitMqConfig["Host"] ?? string.Empty, h =>
         {
-            h.Username("guest");
-            h.Password("guest");
+            h.Username(rabbitMqConfig["Username"] ?? string.Empty);
+            h.Password(rabbitMqConfig["Password"] ?? string.Empty);
         });
+
+        cfg.ConfigureEndpoints(context);
     });
 
     x.AddRequestClient<MicroserviceCreateLogRequest>();

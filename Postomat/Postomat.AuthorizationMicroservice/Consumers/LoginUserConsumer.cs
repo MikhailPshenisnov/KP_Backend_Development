@@ -27,6 +27,15 @@ public class LoginUserConsumer : IConsumer<MicroserviceLoginUserRequest>
             await context.RespondAsync(new MicroserviceLoginUserResponse(
                 true,
                 token,
+                "Ok",
+                null));
+        }
+        catch (ServiceException e)
+        {
+            await context.RespondAsync(new MicroserviceLoginUserResponse(
+                false,
+                null,
+                e.Message,
                 null));
         }
         catch (ExpectedException e)
@@ -34,12 +43,14 @@ public class LoginUserConsumer : IConsumer<MicroserviceLoginUserRequest>
             await context.RespondAsync(new MicroserviceLoginUserResponse(
                 false,
                 null,
-                e.Message));
+                null,
+                $"Unexpected expected error. {e.Message}"));
         }
         catch (Exception e)
         {
             await context.RespondAsync(new MicroserviceLoginUserResponse(
                 false,
+                null,
                 null,
                 $"Unexpected unexpected error. {e.Message}"));
         }

@@ -1,13 +1,14 @@
-﻿using MassTransit;
+﻿using ConsumerException = Postomat.Core.Exceptions.BaseExceptions.ConsumerException;
+using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Postomat.API.Contracts.Requests;
 using Postomat.API.Contracts.Responses;
 using Postomat.Core.Abstractions.Services;
 using Postomat.Core.Contracrs;
+using Postomat.Core.Exceptions.BaseExceptions;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
-using Postomat.Core.Models;
 using Postomat.Core.Models.Other;
 
 namespace Postomat.API.Controllers;
@@ -18,33 +19,15 @@ public class AuthorizationController : ControllerBase
 {
     private readonly IRequestClient<MicroserviceLoginUserRequest> _loginUserClient;
     private readonly IRequestClient<MicroserviceValidateTokenRequest> _validateTokenClient;
-    private readonly IControllerErrorLogService _controllerErrorLogService;
-    private readonly IUsersService _usersService;
+    private readonly IAccessCheckService _accessCheckService;
 
     public AuthorizationController(IRequestClient<MicroserviceLoginUserRequest> loginUserClient,
         IRequestClient<MicroserviceValidateTokenRequest> validateTokenClient,
-        IControllerErrorLogService controllerErrorLogService,
-        IUsersService usersService)
+        IAccessCheckService accessCheckService)
     {
         _loginUserClient = loginUserClient;
         _validateTokenClient = validateTokenClient;
-        _controllerErrorLogService = controllerErrorLogService;
-        _usersService = usersService;
-    }
-
-    private async Task<(bool CheckResult, User? User)> CheckAccessLvl(string token, int minAccessLvl,
-        CancellationToken cancellationToken)
-    {
-        var response = (await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
-            new MicroserviceValidateTokenRequest(token), cancellationToken)).Message;
-        if (!response.IsValid)
-            return (false, null);
-        if (response.UserDto is null)
-            throw new Exception("If token is valid, the user cannot be empty");
-
-        var user = await _usersService.GetUserAsync(response.UserDto.UserId, cancellationToken);
-
-        return (user.Role.AccessLvl <= minAccessLvl, user);
+        _accessCheckService = accessCheckService;
     }
 
     [HttpPost]
@@ -53,21 +36,30 @@ public class AuthorizationController : ControllerBase
     {
         try
         {
-            var response = await _loginUserClient.GetResponse<MicroserviceLoginUserResponse>(
-                new MicroserviceLoginUserRequest(
-                    loginUserRequest.Login,
-                    loginUserRequest.Password),
-                cancellationToken);
+            var response = (await _loginUserClient.GetResponse<MicroserviceLoginUserResponse>(
+                    new MicroserviceLoginUserRequest(loginUserRequest.Login, loginUserRequest.Password),
+                    cancellationToken))
+                .Message;
 
-            if (!response.Message.IsSuccess)
+            if (response.ErrorMessage is not null)
+            {
+                throw new ConsumerException($"Something went wrong while login process. " +
+                                            $"--> {response.ErrorMessage}");
+            }
+
+            if (!response.IsSuccess)
+            {
+                if (response.Message is null)
+                    throw new ConsumerException("If validation is not success, the message cannot be empty.");
                 return Unauthorized(new BaseResponse<LoginUserResponse>(
                     null,
-                    response.Message.ErrorMessage ?? string.Empty));
+                    response.Message));
+            }
 
-            if (response.Message.Token is null)
-                throw new Exception("If login is successful, the token cannot be empty.");
+            if (response.Token is null)
+                throw new ConsumerException("If login is successful, the token cannot be empty.");
 
-            Response.Cookies.Append("jwt_token", response.Message.Token, new CookieOptions
+            Response.Cookies.Append("jwt_token", response.Token, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
@@ -75,31 +67,31 @@ public class AuthorizationController : ControllerBase
             });
 
             return Ok(new BaseResponse<LoginUserResponse>(
-                new LoginUserResponse("Successful", response.Message.Token),
+                new LoginUserResponse(response.Token),
                 null));
         }
-        catch (Exception e)
+        catch (ServiceException e)
         {
-            return Ok(await _controllerErrorLogService.CreateErrorLog<LoginUserResponse>(
-                "Authorization controller", "Error while login process", e.Message));
+            throw new ControllerException($"Error while login process. " +
+                                          $"--> {e.Message}");
         }
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCurrentUserToken(CancellationToken cancellationToken)
+    public Task<IActionResult> GetCurrentUserToken(CancellationToken cancellationToken)
     {
         try
         {
             Request.Cookies.TryGetValue("jwt_token", out var jwtToken);
 
-            return Ok(new BaseResponse<GetCurrentUserTokenResponse>(
+            return Task.FromResult<IActionResult>(Ok(new BaseResponse<GetCurrentUserTokenResponse>(
                 new GetCurrentUserTokenResponse(jwtToken ?? string.Empty),
-                null));
+                null)));
         }
-        catch (Exception e)
+        catch (ServiceException e)
         {
-            return Ok(await _controllerErrorLogService.CreateErrorLog<GetCurrentUserTokenResponse>(
-                "Authorization controller", "Error while getting current user token", e.Message));
+            throw new ControllerException($"Error while getting current user token. " +
+                                          $"--> {e.Message}");
         }
     }
 
@@ -110,37 +102,43 @@ public class AuthorizationController : ControllerBase
     {
         try
         {
-            HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader);
-            var authToken = authHeader.ToString().Replace("Bearer ", string.Empty);
-
-            var (checkResult, user) = await CheckAccessLvl(
-                authToken, (int)AccessLvlEnumerator.DeliveryMan - 1, cancellationToken);
-            if (!checkResult)
-                throw new Exception("The user does not have sufficient access rights");
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
 
             var response = (await _validateTokenClient.GetResponse<MicroserviceValidateTokenResponse>(
                 new MicroserviceValidateTokenRequest(validateTokenRequest.Token), cancellationToken)).Message;
+            if (response.ErrorMessage is not null)
+                throw new ConsumerException($"Something went wrong while token validation process. " +
+                                            $"--> {response.ErrorMessage}");
             if (!response.IsValid)
-                return Ok(new BaseResponse<ValidateTokenResponse>(null, response.ErrorMessage ?? string.Empty));
+            {
+                if (response.Message is null)
+                    throw new ConsumerException("If validation is not success, the message cannot be empty.");
+                return Ok(new BaseResponse<ValidateTokenResponse>(
+                    null,
+                    response.Message));
+            }
+
             if (response.UserDto is null)
-                throw new Exception("If token is valid, the user cannot be empty.");
+                throw new ConsumerException("If token is valid, the user cannot be empty.");
 
             return Ok(new BaseResponse<ValidateTokenResponse>(
                 new ValidateTokenResponse(
-                    "Token is valid",
                     response.UserDto.UserId,
                     response.UserDto.RoleId),
                 null));
         }
-        catch (Exception e)
+        catch (ServiceException e)
         {
-            return Ok(await _controllerErrorLogService.CreateErrorLog<ValidateTokenResponse>(
-                "Authorization controller", "Error while validating token", e.Message));
+            throw new ControllerException($"Error while validating token. " +
+                                          $"--> {e.Message}");
         }
     }
 
     [HttpGet]
-    public async Task<IActionResult> LogoutUser()
+    public Task<IActionResult> LogoutUser()
     {
         try
         {
@@ -151,14 +149,14 @@ public class AuthorizationController : ControllerBase
                 SameSite = SameSiteMode.Strict
             });
 
-            return Ok(new BaseResponse<LogoutUserResponse>(
-                new LogoutUserResponse("Successful"),
-                null));
+            return Task.FromResult<IActionResult>(Ok(new BaseResponse<LogoutUserResponse>(
+                new LogoutUserResponse("Successful."),
+                null)));
         }
-        catch (Exception e)
+        catch (ServiceException e)
         {
-            return Ok(await _controllerErrorLogService.CreateErrorLog<LogoutUserResponse>(
-                "Authorization controller", "Error while logout user", e.Message));
+            throw new ControllerException($"Error while logout user. " +
+                                          $"--> {e.Message}");
         }
     }
 }

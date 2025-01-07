@@ -1,6 +1,6 @@
 ﻿using Postomat.Core.Abstractions.Services;
 using Postomat.Core.Exceptions.BaseExceptions;
-using Postomat.Core.Exceptions.SpecificExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions.ControllerExceptions;
 
 namespace Postomat.Application.Services;
 

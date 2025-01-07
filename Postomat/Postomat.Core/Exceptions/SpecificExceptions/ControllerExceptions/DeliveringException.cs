@@ -1,8 +1,8 @@
 ﻿using Postomat.Core.Exceptions.BaseExceptions;
 
-namespace Postomat.Core.Exceptions.SpecificExceptions;
+namespace Postomat.Core.Exceptions.SpecificExceptions.ControllerExceptions;
 
-public class DeliveringException : ServiceException
+public class DeliveringException : ControllerException
 {
     public DeliveringException()
     {
