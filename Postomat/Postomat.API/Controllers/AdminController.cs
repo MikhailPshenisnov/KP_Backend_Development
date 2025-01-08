@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using MassTransit.Initializers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Postomat.API.Contracts.Requests;
@@ -6,9 +7,12 @@ using Postomat.API.Contracts.Responses;
 using Postomat.Core.Abstractions.Services;
 using Postomat.Core.Contracrs;
 using Postomat.Core.Exceptions.BaseExceptions;
+using Postomat.Core.Exceptions.SpecificExceptions;
 using Postomat.Core.MessageBrokerContracts;
 using Postomat.Core.MessageBrokerContracts.Requests;
 using Postomat.Core.MessageBrokerContracts.Responses;
+using Postomat.Core.Models;
+using Postomat.Core.Models.Filters;
 using Postomat.Core.Models.Other;
 using ConsumerException = Postomat.Core.Exceptions.BaseExceptions.ConsumerException;
 
@@ -340,14 +344,400 @@ public class AdminController : ControllerBase
                                           $"--> {e.Message}");
         }
     }
-    
+
     /* Orders management functionality */
-    
+    [Authorize]
+    [HttpGet("Orders/[action]")]
+    public async Task<IActionResult> GetOrder([FromQuery] GetOrderRequest getOrderRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var order = await _ordersService
+                .GetOrderAsync(getOrderRequest.OrderId, cancellationToken);
+
+            return Ok(new BaseResponse<GetOrderResponse>(
+                new GetOrderResponse(
+                    order.Id,
+                    order.ReceivingCodeHash,
+                    order.OrderSize),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while getting order. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpGet("Orders/[action]")]
+    public async Task<IActionResult> GetFilteredOrders([FromQuery] GetFilteredOrdersRequest getFilteredOrdersRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (orderFilter, error) = getFilteredOrdersRequest.OrderSizeFrom is not null ||
+                                       getFilteredOrdersRequest.OrderSizeTo is not null
+                ? OrderFilter.Create(
+                    getFilteredOrdersRequest.OrderSizeFrom,
+                    getFilteredOrdersRequest.OrderSizeTo)
+                : (null, string.Empty);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert order filter dto to order filter model. " +
+                                              $"--> {error}");
+
+            var orders = await _ordersService
+                .GetFilteredOrdersAsync(orderFilter, cancellationToken);
+
+            return Ok(new BaseResponse<List<GetFilteredOrdersResponse>>(
+                orders
+                    .Select(o => new GetFilteredOrdersResponse(
+                        o.Id,
+                        o.ReceivingCodeHash,
+                        o.OrderSize))
+                    .ToList(),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while getting filtered orders. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPost("Orders/[action]")]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest createOrderRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (order, error) = Order.Create(
+                Guid.NewGuid(),
+                BCrypt.Net.BCrypt.EnhancedHashPassword(createOrderRequest.ReceivingCode),
+                createOrderRequest.OrderSize);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert order dto to order model. " +
+                                              $"--> {error}");
+
+            var createdOrderId = await _ordersService
+                .CreateOrderAsync(order, cancellationToken);
+
+            return Ok(new BaseResponse<CreateOrderResponse>(
+                new CreateOrderResponse(
+                    createdOrderId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while creating order. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPut("Orders/[action]")]
+    public async Task<IActionResult> UpdateOrder([FromBody] UpdateOrderRequest updateOrderRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (newOrder, error) = Order.Create(
+                updateOrderRequest.OrderId,
+                BCrypt.Net.BCrypt.EnhancedHashPassword(updateOrderRequest.NewOrderReceivingCode),
+                updateOrderRequest.NewOrderOrderSize);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert order dto to order model. " +
+                                              $"--> {error}");
+
+            var updatedOrderId = await _ordersService
+                .UpdateOrderAsync(updateOrderRequest.OrderId, newOrder, cancellationToken);
+
+            return Ok(new BaseResponse<UpdateOrderResponse>(
+                new UpdateOrderResponse(
+                    updatedOrderId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while updating order. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("Orders/[action]")]
+    public async Task<IActionResult> DeleteOrder([FromQuery] DeleteOrderRequest deleteOrderRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.JuniorAdministrator - 1,
+                cancellationToken);
+
+            var deletedOrderId = await _ordersService
+                .DeleteOrderAsync(deleteOrderRequest.OrderId, cancellationToken);
+
+            return Ok(new BaseResponse<DeleteOrderResponse>(
+                new DeleteOrderResponse(
+                    deletedOrderId),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while deleting order. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
     /* Order plans management functionality */
-    
+    [Authorize]
+    [HttpGet("OrderPlans/[action]")]
+    public async Task<IActionResult> GetOrderPlan([FromQuery] GetOrderPlanRequest getOrderPlanRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var orderPlan = await _orderPlansService
+                .GetOrderPlanAsync(getOrderPlanRequest.OrderPlanId, cancellationToken);
+
+            return Ok(new BaseResponse<GetOrderPlanResponse>(
+                new GetOrderPlanResponse(
+                    orderPlan.Id,
+                    orderPlan.Status,
+                    orderPlan.LastStatusChangeDate,
+                    orderPlan.StoreUntilDate,
+                    orderPlan.DeliveryCodeHash,
+                    orderPlan.Order.Id,
+                    orderPlan.Postomat.Id,
+                    orderPlan.CreatedBy.Id,
+                    orderPlan.DeliveredBy?.Id,
+                    orderPlan.DeliveredBackBy?.Id),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while getting order plan. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpGet("OrderPlans/[action]")]
+    public async Task<IActionResult> GetFilteredOrderPlans(
+        [FromQuery] GetFilteredOrderPlansRequest getFilteredOrderPlansRequest, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (orderPlanFilter, error) = getFilteredOrderPlansRequest.PartOfStatus is not null ||
+                                           getFilteredOrderPlansRequest.LastStatusChangeDateFrom is not null ||
+                                           getFilteredOrderPlansRequest.LastStatusChangeDateTo is not null ||
+                                           getFilteredOrderPlansRequest.StoreUntilDateFrom is not null ||
+                                           getFilteredOrderPlansRequest.StoreUntilDateTo is not null ||
+                                           getFilteredOrderPlansRequest.OrderId is not null ||
+                                           getFilteredOrderPlansRequest.PostomatId is not null ||
+                                           getFilteredOrderPlansRequest.UserId is not null
+                ? OrderPlanFilter.Create(
+                    getFilteredOrderPlansRequest.PartOfStatus,
+                    getFilteredOrderPlansRequest.LastStatusChangeDateFrom,
+                    getFilteredOrderPlansRequest.LastStatusChangeDateTo,
+                    getFilteredOrderPlansRequest.StoreUntilDateFrom,
+                    getFilteredOrderPlansRequest.StoreUntilDateTo,
+                    getFilteredOrderPlansRequest.OrderId,
+                    getFilteredOrderPlansRequest.PostomatId,
+                    getFilteredOrderPlansRequest.UserId)
+                : (null, string.Empty);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert order plan filter dto to order plan filter model. " +
+                                              $"--> {error}");
+
+            var orderPlans = await _orderPlansService
+                .GetFilteredOrderPlansAsync(orderPlanFilter, cancellationToken);
+
+            return Ok(new BaseResponse<List<GetFilteredOrderPlansResponse>>(
+                orderPlans
+                    .Select(op => new GetFilteredOrderPlansResponse(
+                        op.Id,
+                        op.Status,
+                        op.LastStatusChangeDate,
+                        op.StoreUntilDate,
+                        op.DeliveryCodeHash,
+                        op.Order.Id,
+                        op.Postomat.Id,
+                        op.CreatedBy.Id,
+                        op.DeliveredBy?.Id,
+                        op.DeliveredBackBy?.Id))
+                    .ToList(),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while getting filtered order plans. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPost("OrderPlans/[action]")]
+    public async Task<IActionResult> CreateOrderPlan([FromBody] CreateOrderPlanRequest createOrderPlanRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var order = await _ordersService
+                .GetOrderAsync(createOrderPlanRequest.OrderId, cancellationToken);
+            var postomat = await _postomatsService
+                .GetPostomatAsync(createOrderPlanRequest.PostomatId, cancellationToken);
+
+            var (orderPlan, error) = OrderPlan.Create(
+                Guid.NewGuid(),
+                "Created",
+                DateTime.Now.ToUniversalTime(),
+                null,
+                BCrypt.Net.BCrypt.EnhancedHashPassword(createOrderPlanRequest.DeliveryCode),
+                order,
+                postomat,
+                user,
+                null,
+                null);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert order plan dto to order plan model. " +
+                                              $"--> {error}");
+
+            var createdOrderPlanId = await _orderPlansService
+                .CreateOrderPlanAsync(orderPlan, cancellationToken);
+
+            return Ok(new BaseResponse<CreateOrderPlanResponse>(
+                new CreateOrderPlanResponse(
+                    createdOrderPlanId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while creating order plan. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPut("OrderPlans/[action]")]
+    public async Task<IActionResult> UpdateOrderPlan([FromBody] UpdateOrderPlanRequest updateOrderPlanRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var oldOrderPlan = await _orderPlansService
+                .GetOrderPlanAsync(updateOrderPlanRequest.OrderPlanId, cancellationToken);
+
+            var (newOrderPlan, error) = OrderPlan.Create(
+                updateOrderPlanRequest.OrderPlanId,
+                oldOrderPlan.Status,
+                oldOrderPlan.LastStatusChangeDate,
+                oldOrderPlan.StoreUntilDate,
+                BCrypt.Net.BCrypt.EnhancedHashPassword(updateOrderPlanRequest.NewOrderPlanDeliveryCode),
+                oldOrderPlan.Order,
+                oldOrderPlan.Postomat,
+                oldOrderPlan.CreatedBy,
+                oldOrderPlan.DeliveredBy,
+                oldOrderPlan.DeliveredBackBy);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert order plan dto to order plan model. " +
+                                              $"--> {error}");
+
+            var updatedOrderPlanId = await _orderPlansService
+                .UpdateOrderPlanAsync(updateOrderPlanRequest.OrderPlanId, newOrderPlan, cancellationToken);
+
+            return Ok(new BaseResponse<UpdateOrderPlanResponse>(
+                new UpdateOrderPlanResponse(
+                    updatedOrderPlanId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while updating order plan. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("OrderPlans/[action]")]
+    public async Task<IActionResult> DeleteOrderPlan([FromQuery] DeleteOrderPlanRequest deleteOrderPlanRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.JuniorAdministrator - 1,
+                cancellationToken);
+
+            var deletedOrderPlanId = await _orderPlansService
+                .DeleteOrderPlanAsync(deleteOrderPlanRequest.OrderPlanId, cancellationToken);
+
+            return Ok(new BaseResponse<DeleteOrderPlanResponse>(
+                new DeleteOrderPlanResponse(
+                    deletedOrderPlanId),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while deleting order plan. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
     /* Postomats management functionality */
-    
+
     /* Roles management functionality */
-    
+
     /* Users management functionality */
 }

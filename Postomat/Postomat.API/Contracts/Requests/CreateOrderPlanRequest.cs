@@ -3,5 +3,5 @@
 public record CreateOrderPlanRequest(
     string DeliveryCode,
     Guid OrderId,
-    Guid Postomat
+    Guid PostomatId
 );
