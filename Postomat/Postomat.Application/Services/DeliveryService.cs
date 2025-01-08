@@ -23,7 +23,8 @@ public class DeliveryService : IDeliveryService
         _ordersService = ordersService;
     }
 
-    public async Task<Guid> DeliverOrderAsync(User user, string deliveryCode, Guid postomatId, CancellationToken ct)
+    public async Task<List<Guid>> DeliverOrderAsync(User user, string deliveryCode, Guid postomatId,
+        CancellationToken ct)
     {
         try
         {
@@ -58,7 +59,7 @@ public class DeliveryService : IDeliveryService
                 await _postomatsService.FillCellInPostomatAsync(user, postomatId, order, ct);
             }
 
-            return orderIds[0];
+            return orderIds;
         }
         catch (ExpectedException e) when (e is ConversionException or RepositoryException or ServiceException)
         {
@@ -67,7 +68,8 @@ public class DeliveryService : IDeliveryService
         }
     }
 
-    public async Task<Guid> DeliverOrderBackAsync(User user, string deliveryCode, Guid postomatId, CancellationToken ct)
+    public async Task<List<Guid>> DeliverOrderBackAsync(User user, string deliveryCode, Guid postomatId,
+        CancellationToken ct)
     {
         try
         {
@@ -103,7 +105,7 @@ public class DeliveryService : IDeliveryService
                 await _postomatsService.ClearCellInPostomatAsync(user, postomatId, order, ct);
             }
 
-            return orderIds[0];
+            return orderIds;
         }
         catch (ExpectedException e) when (e is ConversionException or RepositoryException or ServiceException)
         {

@@ -428,6 +428,11 @@ public class AdminController : ControllerBase
                 (int)AccessLvlEnumerator.DeliveryMan - 1,
                 cancellationToken);
 
+            var receivingCodeCheckError = Order.ReceivingCodeCheck(createOrderRequest.ReceivingCode);
+            if (!string.IsNullOrEmpty(receivingCodeCheckError))
+                throw new ConversionException($"Unable to convert order dto to order model. " +
+                                              $"--> {receivingCodeCheckError}");
+
             var (order, error) = Order.Create(
                 Guid.NewGuid(),
                 BCrypt.Net.BCrypt.EnhancedHashPassword(createOrderRequest.ReceivingCode),
@@ -463,6 +468,11 @@ public class AdminController : ControllerBase
                 HttpContext.Request,
                 (int)AccessLvlEnumerator.DeliveryMan - 1,
                 cancellationToken);
+
+            var receivingCodeCheckError = Order.ReceivingCodeCheck(updateOrderRequest.NewOrderReceivingCode);
+            if (!string.IsNullOrEmpty(receivingCodeCheckError))
+                throw new ConversionException($"Unable to convert order dto to order model. " +
+                                              $"--> {receivingCodeCheckError}");
 
             var (newOrder, error) = Order.Create(
                 updateOrderRequest.OrderId,
@@ -630,6 +640,11 @@ public class AdminController : ControllerBase
             var postomat = await _postomatsService
                 .GetPostomatAsync(createOrderPlanRequest.PostomatId, cancellationToken);
 
+            var deliveryCodeCheckError = OrderPlan.DeliveryCodeCheck(createOrderPlanRequest.DeliveryCode);
+            if (!string.IsNullOrEmpty(deliveryCodeCheckError))
+                throw new ConversionException($"Unable to convert order plan dto to order plan model. " +
+                                              $"--> {deliveryCodeCheckError}");
+
             var (orderPlan, error) = OrderPlan.Create(
                 Guid.NewGuid(),
                 "Created",
@@ -675,6 +690,12 @@ public class AdminController : ControllerBase
 
             var oldOrderPlan = await _orderPlansService
                 .GetOrderPlanAsync(updateOrderPlanRequest.OrderPlanId, cancellationToken);
+
+            var deliveryCodeCheckError = OrderPlan
+                .DeliveryCodeCheck(updateOrderPlanRequest.NewOrderPlanDeliveryCode);
+            if (!string.IsNullOrEmpty(deliveryCodeCheckError))
+                throw new ConversionException($"Unable to convert order plan dto to order plan model. " +
+                                              $"--> {deliveryCodeCheckError}");
 
             var (newOrderPlan, error) = OrderPlan.Create(
                 updateOrderPlanRequest.OrderPlanId,
@@ -1253,6 +1274,11 @@ public class AdminController : ControllerBase
 
             var role = await _rolesService.GetRoleAsync(createUserRequest.RoleId, cancellationToken);
 
+            var passwordCheckError = Core.Models.User.PasswordCheck(createUserRequest.Password);
+            if (!string.IsNullOrEmpty(passwordCheckError))
+                throw new ConversionException($"Unable to convert user dto to user model. " +
+                                              $"--> {passwordCheckError}");
+
             var (user, error) = Core.Models.User.Create(
                 Guid.NewGuid(),
                 createUserRequest.Login,
@@ -1300,6 +1326,11 @@ public class AdminController : ControllerBase
                 throw new AccessException("The user does not have sufficient access rights.");
 
             var role = await _rolesService.GetRoleAsync(updateUserRequest.RoleId, cancellationToken);
+
+            var passwordCheckError = Core.Models.User.PasswordCheck(updateUserRequest.Password);
+            if (!string.IsNullOrEmpty(passwordCheckError))
+                throw new ConversionException($"Unable to convert user dto to user model. " +
+                                              $"--> {passwordCheckError}");
 
             var (newUser, error) = Core.Models.User.Create(
                 updateUserRequest.UserId,

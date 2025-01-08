@@ -55,4 +55,36 @@ public class User
 
         return (user, error);
     }
+
+    public static string PasswordCheck(string password)
+    {
+        var passwordCheckError = string.Empty;
+        
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            passwordCheckError = "The password cannot be empty.";
+        }
+        else if (password.Length is < 8 or > 25)
+        {
+            passwordCheckError = "The password must be between 8 and 25 characters.";
+        }
+        else if (!password.Any(char.IsDigit))
+        {
+            passwordCheckError = "The password must contain at least one number.";
+        }
+        else if (!password.Any(char.IsUpper))
+        {
+            passwordCheckError = "The password must contain at least one capital letter.";
+        }
+        else if (!password.Any(char.IsLower))
+        {
+            passwordCheckError = "The password must contain at least one lowercase letter.";
+        }
+        else if (!System.Text.RegularExpressions.Regex.IsMatch(password, @"[!@#$%^&*(),.?""{}|<>]"))
+        {
+            passwordCheckError = "The password must contain at least one special character.";
+        }
+        
+        return passwordCheckError;
+    }
 }

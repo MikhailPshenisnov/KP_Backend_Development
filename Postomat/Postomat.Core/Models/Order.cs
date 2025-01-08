@@ -37,4 +37,20 @@ public class Order
 
         return (order, error);
     }
+
+    public static string ReceivingCodeCheck(string receivingCode)
+    {
+        var receivingCodeCheckError = string.Empty;
+
+        if (receivingCode.Length < 8)
+        {
+            receivingCodeCheckError = "The receiving code must be longer than 8 characters.";
+        }
+        else if (!receivingCode.All(char.IsLetterOrDigit))
+        {
+            receivingCodeCheckError = "The receiving code must consist only of letters and numbers.";
+        }
+
+        return receivingCodeCheckError;
+    }
 }
