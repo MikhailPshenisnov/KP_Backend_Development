@@ -138,7 +138,7 @@ public class AuthorizationController : ControllerBase
     }
 
     [HttpGet]
-    public Task<IActionResult> LogoutUser()
+    public Task<IActionResult> LogoutUser(CancellationToken cancellationToken)
     {
         try
         {
