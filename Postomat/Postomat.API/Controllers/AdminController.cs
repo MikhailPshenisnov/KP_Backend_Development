@@ -1,5 +1,4 @@
 ﻿using MassTransit;
-using MassTransit.Initializers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Postomat.API.Contracts.Requests;
@@ -736,8 +735,630 @@ public class AdminController : ControllerBase
     }
 
     /* Postomats management functionality */
+    [Authorize]
+    [HttpGet("Postomats/[action]")]
+    public async Task<IActionResult> GetPostomat([FromQuery] GetPostomatRequest getPostomatRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var postomat = await _postomatsService
+                .GetPostomatAsync(getPostomatRequest.PostomatId, cancellationToken);
+
+            return Ok(new BaseResponse<GetPostomatResponse>(
+                new GetPostomatResponse(
+                    postomat.Id,
+                    postomat.Name,
+                    postomat.Address),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while getting postomat. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpGet("Postomats/[action]")]
+    public async Task<IActionResult> GetFilteredPostomats(
+        [FromQuery] GetFilteredPostomatsRequest getFilteredPostomatsRequest, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (postomatFilter, error) = getFilteredPostomatsRequest.PartOfName is not null ||
+                                          getFilteredPostomatsRequest.PartOfAddress is not null
+                ? PostomatFilter.Create(
+                    getFilteredPostomatsRequest.PartOfName,
+                    getFilteredPostomatsRequest.PartOfAddress)
+                : (null, string.Empty);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert postomat filter dto to postomat filter model. " +
+                                              $"--> {error}");
+
+            var postomats = await _postomatsService
+                .GetFilteredPostomatsAsync(postomatFilter, cancellationToken);
+
+            return Ok(new BaseResponse<List<GetFilteredPostomatsResponse>>(
+                postomats
+                    .Select(p => new GetFilteredPostomatsResponse(
+                        p.Id,
+                        p.Name,
+                        p.Address))
+                    .ToList(),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while getting filtered postomats. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPost("Postomats/[action]")]
+    public async Task<IActionResult> CreatePostomat([FromBody] CreatePostomatRequest createPostomatRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (postomat, error) = Core.Models.Postomat.Create(
+                Guid.NewGuid(),
+                createPostomatRequest.Name,
+                createPostomatRequest.Address,
+                new List<Cell>());
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert postomat dto to postomat model. " +
+                                              $"--> {error}");
+
+            var createdPostomatId = await _postomatsService
+                .CreatePostomatAsync(postomat, cancellationToken);
+
+            return Ok(new BaseResponse<CreatePostomatResponse>(
+                new CreatePostomatResponse(
+                    createdPostomatId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while creating postomat. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPut("Postomats/[action]")]
+    public async Task<IActionResult> UpdatePostomat([FromBody] UpdatePostomatRequest updatePostomatRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var oldPostomat = await _postomatsService
+                .GetPostomatAsync(updatePostomatRequest.PostomatId, cancellationToken);
+
+            var (newPostomat, error) = Core.Models.Postomat.Create(
+                updatePostomatRequest.PostomatId,
+                updatePostomatRequest.NewPostomatName,
+                updatePostomatRequest.NewPostomatAddress,
+                oldPostomat.Cells);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert postomat dto to postomat model. " +
+                                              $"--> {error}");
+
+            var updatedPostomatId = await _postomatsService
+                .UpdatePostomatAsync(updatePostomatRequest.PostomatId, newPostomat, cancellationToken);
+
+            return Ok(new BaseResponse<UpdatePostomatResponse>(
+                new UpdatePostomatResponse(
+                    updatedPostomatId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while updating postomat. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("Postomats/[action]")]
+    public async Task<IActionResult> DeletePostomat([FromQuery] DeletePostomatRequest deletePostomatRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.JuniorAdministrator - 1,
+                cancellationToken);
+
+            var deletedPostomatId = await _postomatsService
+                .DeletePostomatAsync(deletePostomatRequest.PostomatId, cancellationToken);
+
+            return Ok(new BaseResponse<DeletePostomatResponse>(
+                new DeletePostomatResponse(
+                    deletedPostomatId),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while deleting postomat. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPost("Postomats/[action]")]
+    public async Task<IActionResult> AddCellToPostomat([FromBody] AddCellToPostomatRequest addCellToPostomatRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (cell, error) = Cell.Create(
+                Guid.NewGuid(),
+                addCellToPostomatRequest.CellSize,
+                addCellToPostomatRequest.PostomatId,
+                null);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert cell dto to cell model. " +
+                                              $"--> {error}");
+
+            var addedCellId = await _postomatsService
+                .AddCellToPostomatAsync(cell, cancellationToken);
+
+            return Ok(new BaseResponse<AddCellToPostomatResponse>(
+                new AddCellToPostomatResponse(
+                    addedCellId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while adding cell to postomat. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("Postomats/[action]")]
+    public async Task<IActionResult> DeleteCellFromPostomat(
+        [FromQuery] DeleteCellFromPostomatRequest deleteCellFromPostomatRequest, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.JuniorAdministrator - 1,
+                cancellationToken);
+
+            var deletedCellId = await _postomatsService
+                .DeleteCellFromPostomatAsync(deleteCellFromPostomatRequest.CellId, cancellationToken);
+
+            return Ok(new BaseResponse<DeleteCellFromPostomatResponse>(
+                new DeleteCellFromPostomatResponse(
+                    deletedCellId),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while deleting cell from postomat. " +
+                                          $"--> {e.Message}");
+        }
+    }
 
     /* Roles management functionality */
+    [Authorize]
+    [HttpGet("Roles/[action]")]
+    public async Task<IActionResult> GetRole([FromQuery] GetRoleRequest getRoleRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var role = await _rolesService
+                .GetRoleAsync(getRoleRequest.RoleId, cancellationToken);
+
+            return Ok(new BaseResponse<GetRoleResponse>(
+                new GetRoleResponse(
+                    role.Id,
+                    role.RoleName,
+                    role.AccessLvl),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while getting role. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpGet("Roles/[action]")]
+    public async Task<IActionResult> GetFilteredRoles([FromQuery] GetFilteredRolesRequest getFilteredRolesRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (roleFilter, error) = getFilteredRolesRequest.PartOfRoleName is not null ||
+                                      getFilteredRolesRequest.AccessLvlFrom is not null ||
+                                      getFilteredRolesRequest.AccessLvlTo is not null
+                ? RoleFilter.Create(
+                    getFilteredRolesRequest.PartOfRoleName,
+                    getFilteredRolesRequest.AccessLvlFrom,
+                    getFilteredRolesRequest.AccessLvlTo)
+                : (null, string.Empty);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert role filter dto to role filter model. " +
+                                              $"--> {error}");
+
+            var roles = await _rolesService
+                .GetFilteredRolesAsync(roleFilter, cancellationToken);
+
+            return Ok(new BaseResponse<List<GetFilteredRolesResponse>>(
+                roles
+                    .Select(r => new GetFilteredRolesResponse(
+                        r.Id,
+                        r.RoleName,
+                        r.AccessLvl))
+                    .ToList(),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while getting filtered roles. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPost("Roles/[action]")]
+    public async Task<IActionResult> CreateRole([FromBody] CreateRoleRequest createRoleRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (role, error) = Role.Create(
+                Guid.NewGuid(),
+                createRoleRequest.RoleName,
+                createRoleRequest.AccessLvl);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert role dto to role model. " +
+                                              $"--> {error}");
+
+            if (user.Role.AccessLvl >= role.AccessLvl)
+                throw new AccessException("The user does not have sufficient access rights.");
+
+            var createdRoleId = await _rolesService
+                .CreateRoleAsync(role, cancellationToken);
+
+            return Ok(new BaseResponse<CreateRoleResponse>(
+                new CreateRoleResponse(
+                    createdRoleId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while creating role. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPut("Roles/[action]")]
+    public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleRequest updateRoleRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var oldRole = await _rolesService
+                .GetRoleAsync(updateRoleRequest.RoleId, cancellationToken);
+
+            if (user.Role.AccessLvl >= oldRole.AccessLvl)
+                throw new AccessException("The user does not have sufficient access rights.");
+
+            var (newRole, error) = Role.Create(
+                updateRoleRequest.RoleId,
+                updateRoleRequest.NewRoleRoleName,
+                updateRoleRequest.NewRoleAccessLvl);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert role dto to role model. " +
+                                              $"--> {error}");
+
+            if (user.Role.AccessLvl >= newRole.AccessLvl)
+                throw new AccessException("The user does not have sufficient access rights.");
+
+            var updatedRoleId = await _rolesService
+                .UpdateRoleAsync(updateRoleRequest.RoleId, newRole, cancellationToken);
+
+            return Ok(new BaseResponse<UpdateRoleResponse>(
+                new UpdateRoleResponse(
+                    updatedRoleId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while updating role. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("Roles/[action]")]
+    public async Task<IActionResult> DeleteRole([FromQuery] DeleteRoleRequest deleteRoleRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.JuniorAdministrator - 1,
+                cancellationToken);
+
+            var roleToDelete = await _rolesService
+                .GetRoleAsync(deleteRoleRequest.RoleId, cancellationToken);
+
+            if (user.Role.AccessLvl >= roleToDelete.AccessLvl)
+                throw new AccessException("The user does not have sufficient access rights.");
+
+            var deletedRoleId = await _rolesService
+                .DeleteRoleAsync(deleteRoleRequest.RoleId, cancellationToken);
+
+            return Ok(new BaseResponse<DeleteRoleResponse>(
+                new DeleteRoleResponse(
+                    deletedRoleId),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while deleting role. " +
+                                          $"--> {e.Message}");
+        }
+    }
 
     /* Users management functionality */
+    [Authorize]
+    [HttpGet("Users/[action]")]
+    public async Task<IActionResult> GetUser([FromQuery] GetUserRequest getUserRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var user = await _usersService
+                .GetUserAsync(getUserRequest.UserId, cancellationToken);
+
+            return Ok(new BaseResponse<GetUserResponse>(
+                new GetUserResponse(
+                    user.Id,
+                    user.Login,
+                    user.PasswordHash,
+                    user.Role.Id),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while getting user. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpGet("Users/[action]")]
+    public async Task<IActionResult> GetFilteredUsers([FromQuery] GetFilteredUsersRequest getFilteredUsersRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var (userFilter, error) = getFilteredUsersRequest.PartOfLogin is not null ||
+                                      getFilteredUsersRequest.RoleId is not null
+                ? UserFilter.Create(
+                    getFilteredUsersRequest.PartOfLogin,
+                    getFilteredUsersRequest.RoleId)
+                : (null, string.Empty);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert user filter dto to user filter model. " +
+                                              $"--> {error}");
+
+            var users = await _usersService
+                .GetFilteredUsersAsync(userFilter, cancellationToken);
+
+            return Ok(new BaseResponse<List<GetFilteredUsersResponse>>(
+                users
+                    .Select(u => new GetFilteredUsersResponse(
+                        u.Id,
+                        u.Login,
+                        u.PasswordHash,
+                        u.Role.Id))
+                    .ToList(),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while getting filtered users. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPost("Users/[action]")]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest createUserRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var curUser = await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var role = await _rolesService.GetRoleAsync(createUserRequest.RoleId, cancellationToken);
+
+            var (user, error) = Core.Models.User.Create(
+                Guid.NewGuid(),
+                createUserRequest.Login,
+                BCrypt.Net.BCrypt.EnhancedHashPassword(createUserRequest.Password),
+                role);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert user dto to user model. " +
+                                              $"--> {error}");
+
+            if (curUser.Role.AccessLvl >= user.Role.AccessLvl)
+                throw new AccessException("The user does not have sufficient access rights.");
+
+            var createdUserId = await _usersService
+                .CreateUserAsync(user, cancellationToken);
+
+            return Ok(new BaseResponse<CreateUserResponse>(
+                new CreateUserResponse(
+                    createdUserId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while creating user. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpPut("Users/[action]")]
+    public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequest updateUserRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var curUser = await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.DeliveryMan - 1,
+                cancellationToken);
+
+            var oldUser = await _usersService
+                .GetUserAsync(updateUserRequest.UserId, cancellationToken);
+
+            if (curUser.Role.AccessLvl >= oldUser.Role.AccessLvl)
+                throw new AccessException("The user does not have sufficient access rights.");
+
+            var role = await _rolesService.GetRoleAsync(updateUserRequest.RoleId, cancellationToken);
+
+            var (newUser, error) = Core.Models.User.Create(
+                updateUserRequest.UserId,
+                updateUserRequest.Login,
+                BCrypt.Net.BCrypt.EnhancedHashPassword(updateUserRequest.Password),
+                role);
+
+            if (!string.IsNullOrEmpty(error))
+                throw new ConversionException($"Unable to convert user dto to user model. " +
+                                              $"--> {error}");
+
+            if (curUser.Role.AccessLvl >= oldUser.Role.AccessLvl)
+                throw new AccessException("The user does not have sufficient access rights.");
+
+            var updatedUserId = await _usersService
+                .UpdateUserAsync(updateUserRequest.UserId, newUser, cancellationToken);
+
+            return Ok(new BaseResponse<UpdateUserResponse>(
+                new UpdateUserResponse(
+                    updatedUserId),
+                null));
+        }
+        catch (ExpectedException e) when (e is ConversionException or ServiceException)
+        {
+            throw new ControllerException($"Error while updating user. " +
+                                          $"--> {e.Message}");
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("Users/[action]")]
+    public async Task<IActionResult> DeleteUser([FromQuery] DeleteUserRequest deleteUserRequest,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await _accessCheckService.CheckAccessLvl(
+                HttpContext.Request,
+                (int)AccessLvlEnumerator.JuniorAdministrator - 1,
+                cancellationToken);
+
+            var userToDelete = await _usersService
+                .GetUserAsync(deleteUserRequest.UserId, cancellationToken);
+
+            if (user.Role.AccessLvl >= userToDelete.Role.AccessLvl)
+                throw new AccessException("The user does not have sufficient access rights.");
+
+            var deletedUserId = await _usersService
+                .DeleteUserAsync(deleteUserRequest.UserId, cancellationToken);
+
+            return Ok(new BaseResponse<DeleteUserResponse>(
+                new DeleteUserResponse(
+                    deletedUserId),
+                null));
+        }
+        catch (ServiceException e)
+        {
+            throw new ControllerException($"Error while deleting user. " +
+                                          $"--> {e.Message}");
+        }
+    }
 }

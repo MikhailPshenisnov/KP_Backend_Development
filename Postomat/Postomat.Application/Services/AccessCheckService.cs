@@ -54,7 +54,7 @@ public class AccessCheckService : IAccessCheckService
 
             if (user.Role.AccessLvl <= minAccessLvl)
                 return user;
-            throw new AccessException("The user does not have sufficient access rights");
+            throw new AccessException("The user does not have sufficient access rights.");
         }
         catch (ServiceException e)
         {
