@@ -28,7 +28,7 @@ public class CustomerController : ControllerBase
                 receiveOrderRequest.PostomatId, cancellationToken);
 
             return Ok(new BaseResponse<ReceiveOrderResponse>(
-                new ReceiveOrderResponse("Order received successfully"),
+                new ReceiveOrderResponse("Order received successfully."),
                 null));
         }
         catch (ServiceException e)

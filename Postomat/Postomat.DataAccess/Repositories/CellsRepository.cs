@@ -178,7 +178,7 @@ public class CellsRepository : ICellsRepository
         }
 
         var newCellOrderEntity = newCell.Order is not null
-            ? orderEntities.FirstOrDefault(o => o.Id == oldCellEntity.OrderId)
+            ? orderEntities.FirstOrDefault(o => o.Id == newCell.Order.Id)
             : null;
         if (newCell.Order is not null && newCellOrderEntity is null)
             throw new UnknownIdentifierException($"New cell \"{oldCellEntity.Id}\"/\"{newCell.Id}\" " +

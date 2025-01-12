@@ -24,11 +24,7 @@ public class Postomat
     {
         var error = string.Empty;
 
-        if (cells.Count == 0)
-        {
-            error = "Postomat must have at least one cell.";
-        }
-        else if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
+        if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
         {
             error = $"Name can't be longer than {MaxNameLength} characters or empty.";
         }

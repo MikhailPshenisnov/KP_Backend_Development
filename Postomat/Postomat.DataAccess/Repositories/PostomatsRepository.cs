@@ -79,9 +79,9 @@ public class PostomatsRepository : IPostomatsRepository
         if (oldPostomat is null)
             throw new UnknownIdentifierException($"Unknown postomat id: \"{postomatId}\".");
 
-        if (oldPostomat.Cells != newPostomat.Cells)
-            throw new DestructiveActionException("You cannot change postomat cells from postomat" +
-                                                 "repository, use cells repository for that.");
+        // if (oldPostomat.Cells != newPostomat.Cells)
+        //     throw new DestructiveActionException("You cannot change postomat cells from postomat" +
+        //                                          "repository, use cells repository for that.");
 
         await _context.Postomats
             .Where(p => p.Id == postomatId)

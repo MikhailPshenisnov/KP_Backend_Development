@@ -231,7 +231,7 @@ public class PostomatsService : IPostomatsService
                 cellWithOrder.CellSize,
                 cellWithOrder.PostomatId,
                 null);
-            if (string.IsNullOrEmpty(updatedCell.Error))
+            if (!string.IsNullOrEmpty(updatedCell.Error))
                 throw new ConversionException($"Unable to clear cell with order \"{order.Id}\". " +
                                               $"--> {updatedCell.Error}");
 

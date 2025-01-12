@@ -38,7 +38,7 @@ public class DeliveryController : ControllerBase
                 deliverOrderRequest.PostomatId, cancellationToken);
 
             return Ok(new BaseResponse<DeliverOrderResponse>(
-                new DeliverOrderResponse("Order delivered back successfully."),
+                new DeliverOrderResponse("Order delivered successfully."),
                 null));
         }
         catch (ServiceException e)
@@ -64,7 +64,7 @@ public class DeliveryController : ControllerBase
                 deliverOrderBackRequest.PostomatId, cancellationToken);
 
             return Ok(new BaseResponse<DeliverOrderBackResponse>(
-                new DeliverOrderBackResponse("Order delivered successfully."),
+                new DeliverOrderBackResponse("Order delivered back successfully."),
                 null));
         }
         catch (ServiceException e)
