@@ -1,0 +1,3949 @@
+{
+	"info": {
+		"_postman_id": "8c45bed4-c2a3-4c8b-92a5-16d04aeb259a",
+		"name": "Postomat",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15300758"
+	},
+	"item": [
+		{
+			"name": "Authorization",
+			"item": [
+				{
+					"name": "/Authorization/LoginUser",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"login\": \"login\",\r\n  \"password\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7191/Authorization/LoginUser",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7191",
+							"path": [
+								"Authorization",
+								"LoginUser"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Correct response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"login\": \"login\",\r\n  \"password\": \"password\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Authorization/LoginUser",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Authorization",
+										"LoginUser"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 09 Jan 2025 01:16:31 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Kestrel"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "jwt_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyNzk1MTk3OS1iZmY0LTQzODUtYWRjNC1kZWYyYzQxNTgwZWEiLCJyb2xlSWQiOiIyYmM3ZjQ4Yi1iMjk3LTRiODctOThmMi1iOTIzMGNjNDE0NmYiLCJuYmYiOjE3MzYzODUzOTEsImV4cCI6MTczNjM4NTk5MSwiaWF0IjoxNzM2Mzg1MzkxfQ.2EmGy3MKLus3brmEmCcSlN6RZm3kWcEeNF0yATjvnX0; path=/; secure; samesite=strict; httponly"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"data\": {\n        \"token\": \"token\"\n    },\n    \"errorMessage\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "/Authorization/GetCurrentUserToken",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7191/Authorization/GetCurrentUserToken",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7191",
+							"path": [
+								"Authorization",
+								"GetCurrentUserToken"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Correct response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Authorization/GetCurrentUserToken",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Authorization",
+										"GetCurrentUserToken"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 09 Jan 2025 01:17:02 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Kestrel"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"data\": {\n        \"token\": \"token\"\n    },\n    \"errorMessage\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "/Authorization/ValidateToken",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "token",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"token\": \"token\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7191/Authorization/ValidateToken",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7191",
+							"path": [
+								"Authorization",
+								"ValidateToken"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Correct response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"token\": \"token\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Authorization/ValidateToken",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Authorization",
+										"ValidateToken"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 09 Jan 2025 01:19:10 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Kestrel"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"data\": {\n        \"userId\": \"guid\",\n        \"roleId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "/Authorization/LogoutUser",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7191/Authorization/LogoutUser",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7191",
+							"path": [
+								"Authorization",
+								"LogoutUser"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Correct response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Authorization/LogoutUser",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Authorization",
+										"LogoutUser"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 09 Jan 2025 01:22:16 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Kestrel"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "jwt_token=; path=/; secure; samesite=strict; httponly"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"data\": {\n        \"message\": \"Successful.\"\n    },\n    \"errorMessage\": null\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Customer",
+			"item": [
+				{
+					"name": "/Customer/ReceiveOrder",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7191/Customer/ReceiveOrder?PostomatId=guid&ReceivingCode=code",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7191",
+							"path": [
+								"Customer",
+								"ReceiveOrder"
+							],
+							"query": [
+								{
+									"key": "PostomatId",
+									"value": "guid"
+								},
+								{
+									"key": "ReceivingCode",
+									"value": "code"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "CorrectResponse",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Delivery/ReceiveOrder?PostomatId=guid&ReceivingCode=code",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Delivery",
+										"ReceiveOrder"
+									],
+									"query": [
+										{
+											"key": "PostomatId",
+											"value": "guid"
+										},
+										{
+											"key": "ReceivingCode",
+											"value": "code"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 12 Jan 2025 10:48:24 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Kestrel"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"data\": {\n        \"message\": \"Order received successfully.\"\n    },\n    \"errorMessage\": null\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Delivery",
+			"item": [
+				{
+					"name": "/Delivery/DeliverOrder",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "token",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7191/Delivery/DeliverOrder?PostomatId=guid&DeliveryCode=code",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7191",
+							"path": [
+								"Delivery",
+								"DeliverOrder"
+							],
+							"query": [
+								{
+									"key": "PostomatId",
+									"value": "guid"
+								},
+								{
+									"key": "DeliveryCode",
+									"value": "code"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "CorrectResponse",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Delivery/DeliverOrder?PostomatId=guid&DeliveryCode=code",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Delivery",
+										"DeliverOrder"
+									],
+									"query": [
+										{
+											"key": "PostomatId",
+											"value": "guid"
+										},
+										{
+											"key": "DeliveryCode",
+											"value": "code"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 12 Jan 2025 10:30:00 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Kestrel"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"data\": {\n        \"message\": \"Order delivered successfully.\"\n    },\n    \"errorMessage\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "/Delivery/DeliverOrderBack",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "token",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7191/Delivery/DeliverOrderBack?PostomatId=guid&DeliveryCode=code",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7191",
+							"path": [
+								"Delivery",
+								"DeliverOrderBack"
+							],
+							"query": [
+								{
+									"key": "PostomatId",
+									"value": "guid"
+								},
+								{
+									"key": "DeliveryCode",
+									"value": "code"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "CorrectResponse",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Delivery/DeliverOrderBack?PostomatId=guid&DeliveryCode=code",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Delivery",
+										"DeliverOrderBack"
+									],
+									"query": [
+										{
+											"key": "PostomatId",
+											"value": "guid"
+										},
+										{
+											"key": "DeliveryCode",
+											"value": "code"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 12 Jan 2025 10:31:48 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Kestrel"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"data\": {\n        \"message\": \"Order delivered back successfully.\"\n    },\n    \"errorMessage\": null\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Customer and Delivery (Admin)",
+					"item": [
+						{
+							"name": "/Admin/ReceiveOrder",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/ReceiveOrder?PostomatId=guid&ReceivingCode=code",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"ReceiveOrder"
+									],
+									"query": [
+										{
+											"key": "PostomatId",
+											"value": "guid"
+										},
+										{
+											"key": "ReceivingCode",
+											"value": "code"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/ReceiveOrder?PostomatId=guid&ReceivingCode=code",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"ReceiveOrder"
+											],
+											"query": [
+												{
+													"key": "PostomatId",
+													"value": "guid"
+												},
+												{
+													"key": "ReceivingCode",
+													"value": "code"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 10:48:24 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"message\": \"Order received successfully.\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/DeliverOrder",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/DeliverOrder?PostomatId=guid&DeliveryCode=code",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"DeliverOrder"
+									],
+									"query": [
+										{
+											"key": "PostomatId",
+											"value": "guid"
+										},
+										{
+											"key": "DeliveryCode",
+											"value": "code"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/DeliverOrder?PostomatId=guid&DeliveryCode=code",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"DeliverOrder"
+											],
+											"query": [
+												{
+													"key": "PostomatId",
+													"value": "guid"
+												},
+												{
+													"key": "DeliveryCode",
+													"value": "code"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 10:30:00 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"message\": \"Order delivered successfully.\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/DeliverOrderBack",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/DeliverOrderBack?PostomatId=guid&DeliveryCode=code",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"DeliverOrderBack"
+									],
+									"query": [
+										{
+											"key": "PostomatId",
+											"value": "guid"
+										},
+										{
+											"key": "DeliveryCode",
+											"value": "code"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/DeliverOrderBack?PostomatId=guid&DeliveryCode=code",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"DeliverOrderBack"
+											],
+											"query": [
+												{
+													"key": "PostomatId",
+													"value": "guid"
+												},
+												{
+													"key": "DeliveryCode",
+													"value": "code"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 10:31:48 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"message\": \"Order delivered back successfully.\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Logs",
+					"item": [
+						{
+							"name": "/Admin/Logs/GetLog",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Logs/GetLog?LogId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Logs",
+										"GetLog"
+									],
+									"query": [
+										{
+											"key": "LogId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Correct response",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Logs/GetLog?LogId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Logs",
+												"GetLog"
+											],
+											"query": [
+												{
+													"key": "LogId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 01:27:39 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"id\": \"guid\",\n        \"date\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\n        \"origin\": \"string\",\n        \"type\": \"string\",\n        \"title\": \"string\",\n        \"message\": \"text\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Logs/GetFilteredLogs",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Logs/GetFilteredLogs?DateFrom=yyyy-mm-ddThh:mm:ss.sssZ?&DateTo=yyyy-mm-ddThh:mm:ss.sssZ?&PartOfOrigin=string?&PartOfType=string?&PartOfTitle=string?&PartOfMessage=string?",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Logs",
+										"GetFilteredLogs"
+									],
+									"query": [
+										{
+											"key": "DateFrom",
+											"value": "yyyy-mm-ddThh:mm:ss.sssZ?"
+										},
+										{
+											"key": "DateTo",
+											"value": "yyyy-mm-ddThh:mm:ss.sssZ?"
+										},
+										{
+											"key": "PartOfOrigin",
+											"value": "string?"
+										},
+										{
+											"key": "PartOfType",
+											"value": "string?"
+										},
+										{
+											"key": "PartOfTitle",
+											"value": "string?"
+										},
+										{
+											"key": "PartOfMessage",
+											"value": "string?"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Correct response",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Logs/GetFilteredLogs",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Logs",
+												"GetFilteredLogs"
+											],
+											"query": [
+												{
+													"key": "DateFrom",
+													"value": "yyyy-mm-ddThh:mm:ss.sssZ?",
+													"disabled": true
+												},
+												{
+													"key": "DateTo",
+													"value": "yyyy-mm-ddThh:mm:ss.sssZ?",
+													"disabled": true
+												},
+												{
+													"key": "PartOfOrigin",
+													"value": "string?",
+													"disabled": true
+												},
+												{
+													"key": "PartOfType",
+													"value": "string?",
+													"disabled": true
+												},
+												{
+													"key": "PartOfTitle",
+													"value": "string?",
+													"disabled": true
+												},
+												{
+													"key": "PartOfMessage",
+													"value": "string?",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 01:26:27 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": [\n        {\n            \"id\": \"guid\",\n            \"date\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\n            \"origin\": \"string\",\n            \"type\": \"string\",\n            \"title\": \"string\",\n            \"message\": \"text\"\n        },\n        {\n            \"id\": \"guid\",\n            \"date\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\n            \"origin\": \"string\",\n            \"type\": \"string\",\n            \"title\": \"string\",\n            \"message\": \"text\"\n        },\n        \n        /* ... */\n\n        {\n            \"id\": \"guid\",\n            \"date\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\n            \"origin\": \"string\",\n            \"type\": \"string\",\n            \"title\": \"string\",\n            \"message\": \"text\"\n        }\n    ],\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Logs/CreateLog",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"date\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\r\n  \"origin\": \"string\",\r\n  \"type\": \"string\",\r\n  \"title\": \"string\",\r\n  \"message\": \"string\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Logs/CreateLog",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Logs",
+										"CreateLog"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Correct response",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"date\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\r\n  \"origin\": \"string\",\r\n  \"type\": \"string\",\r\n  \"title\": \"string\",\r\n  \"message\": \"text\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Logs/CreateLog",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Logs",
+												"CreateLog"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 01:37:28 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"createdLogId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Logs/UpdateLog",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"logId\": \"guid\",\r\n  \"newLogDate\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\r\n  \"newLogOrigin\": \"string\",\r\n  \"newLogType\": \"string\",\r\n  \"newLogTitle\": \"string\",\r\n  \"newLogMessage\": \"string\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Logs/UpdateLog",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Logs",
+										"UpdateLog"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Correct response",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"logId\": \"guid\",\r\n  \"newLogDate\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\r\n  \"newLogOrigin\": \"string\",\r\n  \"newLogType\": \"string\",\r\n  \"newLogTitle\": \"string\",\r\n  \"newLogMessage\": \"string\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Logs/UpdateLog",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Logs",
+												"UpdateLog"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 01:49:34 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"updatedLogId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Logs/DeleteLog",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Logs/DeleteLog?LogId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Logs",
+										"DeleteLog"
+									],
+									"query": [
+										{
+											"key": "LogId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Correct response",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Logs/DeleteLog?LogId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Logs",
+												"DeleteLog"
+											],
+											"query": [
+												{
+													"key": "LogId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 01:50:38 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"deletedLogId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Orders",
+					"item": [
+						{
+							"name": "/Admin/Orders/GetOrder",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Orders/GetOrder?OrderId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Orders",
+										"GetOrder"
+									],
+									"query": [
+										{
+											"key": "OrderId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Orders/GetOrder?OrderId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Orders",
+												"GetOrder"
+											],
+											"query": [
+												{
+													"key": "OrderId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:03:34 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"id\": \"guid\",\n        \"receivingCodeHash\": \"codeHash\",\n        \"orderSize\": 0\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Orders/GetFilteredOrders",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Orders/GetFilteredOrders?OrderSizeFrom=int?&OrderSizeTo=int?",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Orders",
+										"GetFilteredOrders"
+									],
+									"query": [
+										{
+											"key": "OrderSizeFrom",
+											"value": "int?"
+										},
+										{
+											"key": "OrderSizeTo",
+											"value": "int?"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Orders/GetFilteredOrders",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Orders",
+												"GetFilteredOrders"
+											],
+											"query": [
+												{
+													"key": "OrderSizeFrom",
+													"value": "int?",
+													"disabled": true
+												},
+												{
+													"key": "OrderSizeTo",
+													"value": "int?",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:03:05 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": [\n        {\n            \"id\": \"guid\",\n            \"receivingCodeHash\": \"codeHash\",\n            \"orderSize\": 0\n        },\n        {\n            \"id\": \"guid\",\n            \"receivingCodeHash\": \"codeHash\",\n            \"orderSize\": 0\n        },\n\n        /* ... */\n\n        {\n            \"id\": \"guid\",\n            \"receivingCodeHash\": \"codeHash\",\n            \"orderSize\": 0\n        }\n    ],\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Orders/CreateOrder",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"receivingCode\": \"string\",\r\n  \"orderSize\": 0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Orders/CreateOrder",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Orders",
+										"CreateOrder"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"receivingCode\": \"12345678\",\r\n  \"orderSize\": 2\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Orders/CreateOrder",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Orders",
+												"CreateOrder"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:02:10 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"createdOrderId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Orders/UpdateOrder",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"orderId\": \"guid\",\r\n  \"newOrderReceivingCode\": \"string\",\r\n  \"newOrderOrderSize\": 0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Orders/UpdateOrder",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Orders",
+										"UpdateOrder"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"orderId\": \"guid\",\r\n  \"newOrderReceivingCode\": \"code\",\r\n  \"newOrderOrderSize\": 0\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Orders/UpdateOrder",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Orders",
+												"UpdateOrder"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:04:27 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"updatedOrderId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Orders/DeleteOrder",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Orders/DeleteOrder?OrderId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Orders",
+										"DeleteOrder"
+									],
+									"query": [
+										{
+											"key": "OrderId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Orders/DeleteOrder?OrderId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Orders",
+												"DeleteOrder"
+											],
+											"query": [
+												{
+													"key": "OrderId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:06:50 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"deletedOrderId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Order plans",
+					"item": [
+						{
+							"name": "/Admin/OrderPlans/GetOrderPlan",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/OrderPlans/GetOrderPlan?OrderPlanId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"OrderPlans",
+										"GetOrderPlan"
+									],
+									"query": [
+										{
+											"key": "OrderPlanId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/OrderPlans/GetOrderPlan?OrderPlanId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"OrderPlans",
+												"GetOrderPlan"
+											],
+											"query": [
+												{
+													"key": "OrderPlanId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 02:00:12 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"id\": \"guid\",\n        \"status\": \"string\",\n        \"lastStatusChangeDate\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\n        \"storeUntilDate\": \"yyyy-mm-ddThh:mm:ss.sssZ?\",\n        \"deliveryCodeHash\": \"codeHash\",\n        \"orderId\": \"guid\",\n        \"postomatId\": \"guid\",\n        \"createdBy\": \"guid\",\n        \"deliveredBy\": \"guid?\",\n        \"deliveredBackBy\": \"guid?\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/OrderPlans/GetFilteredOrderPlans",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/OrderPlans/GetFilteredOrderPlans?PartOfStatus=string?&LastStatusChangeDateFrom=yyyy-mm-ddThh:mm:ss.sssZ?&LastStatusChangeDateTo=yyyy-mm-ddThh:mm:ss.sssZ?&StoreUntilDateFrom=yyyy-mm-ddThh:mm:ss.sssZ?&StoreUntilDateTo=yyyy-mm-ddThh:mm:ss.sssZ?&OrderId=guid?&PostomatId=guid?&UserId=guid?",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"OrderPlans",
+										"GetFilteredOrderPlans"
+									],
+									"query": [
+										{
+											"key": "PartOfStatus",
+											"value": "string?"
+										},
+										{
+											"key": "LastStatusChangeDateFrom",
+											"value": "yyyy-mm-ddThh:mm:ss.sssZ?"
+										},
+										{
+											"key": "LastStatusChangeDateTo",
+											"value": "yyyy-mm-ddThh:mm:ss.sssZ?"
+										},
+										{
+											"key": "StoreUntilDateFrom",
+											"value": "yyyy-mm-ddThh:mm:ss.sssZ?"
+										},
+										{
+											"key": "StoreUntilDateTo",
+											"value": "yyyy-mm-ddThh:mm:ss.sssZ?"
+										},
+										{
+											"key": "OrderId",
+											"value": "guid?"
+										},
+										{
+											"key": "PostomatId",
+											"value": "guid?"
+										},
+										{
+											"key": "UserId",
+											"value": "guid?"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/OrderPlans/GetFilteredOrderPlans",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"OrderPlans",
+												"GetFilteredOrderPlans"
+											],
+											"query": [
+												{
+													"key": "PartOfStatus",
+													"value": "string?",
+													"disabled": true
+												},
+												{
+													"key": "LastStatusChangeDateFrom",
+													"value": "yyyy-mm-ddThh:mm:ss.sssZ?",
+													"disabled": true
+												},
+												{
+													"key": "LastStatusChangeDateTo",
+													"value": "yyyy-mm-ddThh:mm:ss.sssZ?",
+													"disabled": true
+												},
+												{
+													"key": "StoreUntilDateFrom",
+													"value": "yyyy-mm-ddThh:mm:ss.sssZ?",
+													"disabled": true
+												},
+												{
+													"key": "StoreUntilDateTo",
+													"value": "yyyy-mm-ddThh:mm:ss.sssZ?",
+													"disabled": true
+												},
+												{
+													"key": "OrderId",
+													"value": "guid?",
+													"disabled": true
+												},
+												{
+													"key": "PostomatId",
+													"value": "guid?",
+													"disabled": true
+												},
+												{
+													"key": "UserId",
+													"value": "guid?",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:59:21 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": [\n        {\n            \"id\": \"guid\",\n            \"status\": \"string\",\n            \"lastStatusChangeDate\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\n            \"storeUntilDate\": \"yyyy-mm-ddThh:mm:ss.sssZ?\",\n            \"deliveryCodeHash\": \"codeHash\",\n            \"orderId\": \"guid\",\n            \"postomatId\": \"guid\",\n            \"createdBy\": \"guid\",\n            \"deliveredBy\": \"guid?\",\n            \"deliveredBackBy\": \"guid?\"\n        },\n        {\n            \"id\": \"guid\",\n            \"status\": \"string\",\n            \"lastStatusChangeDate\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\n            \"storeUntilDate\": \"yyyy-mm-ddThh:mm:ss.sssZ?\",\n            \"deliveryCodeHash\": \"codeHash\",\n            \"orderId\": \"guid\",\n            \"postomatId\": \"guid\",\n            \"createdBy\": \"guid\",\n            \"deliveredBy\": \"guid?\",\n            \"deliveredBackBy\": \"guid?\"\n        },\n\n        /* ... */\n\n        {\n            \"id\": \"guid\",\n            \"status\": \"string\",\n            \"lastStatusChangeDate\": \"yyyy-mm-ddThh:mm:ss.sssZ\",\n            \"storeUntilDate\": \"yyyy-mm-ddThh:mm:ss.sssZ?\",\n            \"deliveryCodeHash\": \"codeHash\",\n            \"orderId\": \"guid\",\n            \"postomatId\": \"guid\",\n            \"createdBy\": \"guid\",\n            \"deliveredBy\": \"guid?\",\n            \"deliveredBackBy\": \"guid?\"\n        }\n    ],\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/OrderPlans/CreateOrderPlan",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"deliveryCode\": \"string\",\r\n  \"orderId\": \"guid\",\r\n  \"postomatId\": \"guid\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/OrderPlans/CreateOrderPlan",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"OrderPlans",
+										"CreateOrderPlan"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"deliveryCode\": \"code\",\r\n  \"orderId\": \"guid\",\r\n  \"postomatId\": \"guid\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/OrderPlans/CreateOrderPlan",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"OrderPlans",
+												"CreateOrderPlan"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:50:28 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"createdOrderPlanId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/OrderPlans/UpdateOrderPlan",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"orderPlanId\": \"guid\",\r\n  \"newOrderPlanDeliveryCode\": \"string\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/OrderPlans/UpdateOrderPlan",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"OrderPlans",
+										"UpdateOrderPlan"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"orderPlanId\": \"guid\",\r\n  \"newOrderPlanDeliveryCode\": \"code\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/OrderPlans/UpdateOrderPlan",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"OrderPlans",
+												"UpdateOrderPlan"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:51:35 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"updatedOrderPlanId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/OrderPlans/DeleteOrderPlan",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/OrderPlans/DeleteOrderPlan?OrderPlanId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"OrderPlans",
+										"DeleteOrderPlan"
+									],
+									"query": [
+										{
+											"key": "OrderPlanId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/OrderPlans/DeleteOrderPlan?OrderPlanId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"OrderPlans",
+												"DeleteOrderPlan"
+											],
+											"query": [
+												{
+													"key": "OrderPlanId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 02:00:49 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"deletedOrderPlanId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Postomats",
+					"item": [
+						{
+							"name": "/Admin/Postomats/GetPostomat",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Postomats/GetPostomat?PostomatId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Postomats",
+										"GetPostomat"
+									],
+									"query": [
+										{
+											"key": "PostomatId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Postomats/GetPostomat?PostomatId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Postomats",
+												"GetPostomat"
+											],
+											"query": [
+												{
+													"key": "PostomatId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:29:33 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"id\": \"guid\",\n        \"name\": \"string\",\n        \"address\": \"string\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Postomats/GetFilteredPostomats",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Postomats/GetFilteredPostomats?PartOfName=string?&PartOfAddress=string?",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Postomats",
+										"GetFilteredPostomats"
+									],
+									"query": [
+										{
+											"key": "PartOfName",
+											"value": "string?"
+										},
+										{
+											"key": "PartOfAddress",
+											"value": "string?"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Postomats/GetFilteredPostomats",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Postomats",
+												"GetFilteredPostomats"
+											],
+											"query": [
+												{
+													"key": "PartOfName",
+													"value": "string?",
+													"disabled": true
+												},
+												{
+													"key": "PartOfAddress",
+													"value": "string?",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:28:49 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": [\n        {\n            \"id\": \"guid\",\n            \"name\": \"string\",\n            \"address\": \"string\"\n        },\n        {\n            \"id\": \"guid\",\n            \"name\": \"string\",\n            \"address\": \"string\"\n        },\n\n        /* ... */\n\n        {\n            \"id\": \"guid\",\n            \"name\": \"string\",\n            \"address\": \"string\"\n        }\n    ],\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Postomats/CreatePostomat",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"string\",\r\n  \"address\": \"string\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Postomats/CreatePostomat",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Postomats",
+										"CreatePostomat"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"string\",\r\n  \"address\": \"string\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Postomats/CreatePostomat",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Postomats",
+												"CreatePostomat"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:28:17 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"createdPostomatId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Postomats/UpdatePostomat",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"postomatId\": \"guid\",\r\n  \"newPostomatName\": \"string\",\r\n  \"newPostomatAddress\": \"string\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Postomats/UpdatePostomat",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Postomats",
+										"UpdatePostomat"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"postomatId\": \"guid\",\r\n  \"newPostomatName\": \"string\",\r\n  \"newPostomatAddress\": \"string\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Postomats/UpdatePostomat",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Postomats",
+												"UpdatePostomat"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:37:48 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"updatedPostomatId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Postomats/DeletePostomat",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Postomats/DeletePostomat?PostomatId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Postomats",
+										"DeletePostomat"
+									],
+									"query": [
+										{
+											"key": "PostomatId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Postomats/DeletePostomat?PostomatId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Postomats",
+												"DeletePostomat"
+											],
+											"query": [
+												{
+													"key": "PostomatId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:40:49 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"deletedPostomatId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Postomats/AddCellToPostomat",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"postomatId\": \"guid\",\r\n  \"cellSize\": 0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Postomats/AddCellToPostomat",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Postomats",
+										"AddCellToPostomat"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"postomatId\": \"guid\",\r\n  \"cellSize\": 0\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Postomats/AddCellToPostomat",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Postomats",
+												"AddCellToPostomat"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:42:36 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"addedCellId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Postomats/DeleteCellFromPostomat",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Postomats/DeleteCellFromPostomat?CellId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Postomats",
+										"DeleteCellFromPostomat"
+									],
+									"query": [
+										{
+											"key": "CellId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Postomats/DeleteCellFromPostomat?CellId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Postomats",
+												"DeleteCellFromPostomat"
+											],
+											"query": [
+												{
+													"key": "CellId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Sun, 12 Jan 2025 01:44:06 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"deletedCellId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Roles",
+					"item": [
+						{
+							"name": "/Admin/Roles/GetRole",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Roles/GetRole?RoleId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Roles",
+										"GetRole"
+									],
+									"query": [
+										{
+											"key": "RoleId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Roles/GetRole?RoleId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Roles",
+												"GetRole"
+											],
+											"query": [
+												{
+													"key": "RoleId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:18:26 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"id\": \"guid\",\n        \"roleName\": \"string\",\n        \"accessLvl\": 0\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Roles/GetFilteredRoles",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Roles/GetFilteredRoles?PartOfRoleName=string?&AccessLvlFrom=int?&AccessLvlTo=int?",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Roles",
+										"GetFilteredRoles"
+									],
+									"query": [
+										{
+											"key": "PartOfRoleName",
+											"value": "string?"
+										},
+										{
+											"key": "AccessLvlFrom",
+											"value": "int?"
+										},
+										{
+											"key": "AccessLvlTo",
+											"value": "int?"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Roles/GetFilteredRoles",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Roles",
+												"GetFilteredRoles"
+											],
+											"query": [
+												{
+													"key": "PartOfRoleName",
+													"value": "string?",
+													"disabled": true
+												},
+												{
+													"key": "AccessLvlFrom",
+													"value": "int?",
+													"disabled": true
+												},
+												{
+													"key": "AccessLvlTo",
+													"value": "int?",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:08:57 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": [\n        {\n            \"id\": \"guid\",\n            \"roleName\": \"string\",\n            \"accessLvl\": 0\n        },\n        {\n            \"id\": \"guid\",\n            \"roleName\": \"string\",\n            \"accessLvl\": 0\n        },\n\n        /* ... */\n\n        {\n            \"id\": \"guid\",\n            \"roleName\": \"string\",\n            \"accessLvl\": 0\n        }\n    ],\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Roles/CreateRole",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"roleName\": \"string\",\r\n  \"accessLvl\": 0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Roles/CreateRole",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Roles",
+										"CreateRole"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"roleName\": \"string\",\r\n  \"accessLvl\": 0\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Roles/CreateRole",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Roles",
+												"CreateRole"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:26:21 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"createdRoleId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Roles/UpdateRole",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"roleId\": \"guid\",\r\n  \"newRoleRoleName\": \"string\",\r\n  \"newRoleAccessLvl\": 0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Roles/UpdateRole",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Roles",
+										"UpdateRole"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"roleId\": \"guid\",\r\n  \"newRoleRoleName\": \"string\",\r\n  \"newRoleAccessLvl\": 0\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Roles/UpdateRole",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Roles",
+												"UpdateRole"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:23:17 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"updatedRoleId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Roles/DeleteRole",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Roles/DeleteRole?RoleId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Roles",
+										"DeleteRole"
+									],
+									"query": [
+										{
+											"key": "RoleId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Roles/DeleteRole?RoleId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Roles",
+												"DeleteRole"
+											],
+											"query": [
+												{
+													"key": "RoleId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:40:49 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"deletedRoleId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Users",
+					"item": [
+						{
+							"name": "/Admin/Users/GetUser",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Users/GetUser?UserId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Users",
+										"GetUser"
+									],
+									"query": [
+										{
+											"key": "UserId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Users/GetUser?UserId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Users",
+												"GetUser"
+											],
+											"query": [
+												{
+													"key": "UserId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 03:05:37 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"id\": \"guid\",\n        \"login\": \"login\",\n        \"passwordHash\": \"passwordHash\",\n        \"roleId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Users/GetFilteredUsers",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Users/GetFilteredUsers?PartOfLogin=string?&RoleId=guid?",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Users",
+										"GetFilteredUsers"
+									],
+									"query": [
+										{
+											"key": "PartOfLogin",
+											"value": "string?"
+										},
+										{
+											"key": "RoleId",
+											"value": "guid?"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Users/GetFilteredUsers",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Users",
+												"GetFilteredUsers"
+											],
+											"query": [
+												{
+													"key": "PartOfLogin",
+													"value": "string?",
+													"disabled": true
+												},
+												{
+													"key": "RoleId",
+													"value": "guid?",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:48:18 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": [\n        {\n            \"id\": \"guid\",\n            \"login\": \"login\",\n            \"passwordHash\": \"passwordHash\",\n            \"roleId\": \"guid\"\n        },\n        {\n            \"id\": \"guid\",\n            \"login\": \"login\",\n            \"passwordHash\": \"passwordHash\",\n            \"roleId\": \"guid\"\n        },\n\n        /* ... */\n\n        {\n            \"id\": \"guid\",\n            \"login\": \"login\",\n            \"passwordHash\": \"passwordHash\",\n            \"roleId\": \"guid\"\n        }\n    ],\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Users/CreateUser",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"login\": \"string\",\r\n  \"password\": \"string\",\r\n  \"roleId\": \"guid\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Users/CreateUser",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Users",
+										"CreateUser"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"login\": \"login\",\r\n  \"password\": \"password\",\r\n  \"roleId\": \"guid\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Users/CreateUser",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Users",
+												"CreateUser"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:49:57 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"createdUserId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Users/UpdateUser",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"userId\": \"guid\",\r\n  \"login\": \"string\",\r\n  \"password\": \"string\",\r\n  \"roleId\": \"guid\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://localhost:7191/Admin/Users/UpdateUser",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Users",
+										"UpdateUser"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"userId\": \"guid\",\r\n  \"login\": \"login\",\r\n  \"password\": \"password\",\r\n  \"roleId\": \"guid\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://localhost:7191/Admin/Users/UpdateUser",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Users",
+												"UpdateUser"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 02:56:32 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"updatedUserId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						},
+						{
+							"name": "/Admin/Users/DeleteUser",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7191/Admin/Users/DeleteUser?UserId=guid",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7191",
+									"path": [
+										"Admin",
+										"Users",
+										"DeleteUser"
+									],
+									"query": [
+										{
+											"key": "UserId",
+											"value": "guid"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "CorrectResponse",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "https://localhost:7191/Admin/Users/DeleteUser?UserId=guid",
+											"protocol": "https",
+											"host": [
+												"localhost"
+											],
+											"port": "7191",
+											"path": [
+												"Admin",
+												"Users",
+												"DeleteUser"
+											],
+											"query": [
+												{
+													"key": "UserId",
+													"value": "guid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Thu, 09 Jan 2025 07:39:49 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": {\n        \"deletedUserId\": \"guid\"\n    },\n    \"errorMessage\": null\n}"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}
